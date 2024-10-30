@@ -9,12 +9,6 @@ typedef int NodeID;
 
 class CircuitNode {
     private:
-        // NodeID node_id_;
-        // bool input_pad_;
-        // bool output_pad_;
-        // std::string gate_type_;
-        // const GateInfo* gate_info_;
-        // std::list<NodeID> fanin_list_;
 
     public:
 
@@ -26,32 +20,50 @@ class CircuitNode {
         std::vector<NodeID> fanin_list_;
 
         // data added from given code
-        std::vector<NodeID> fanout_list;
-        double gateSlack; // use backwards traversal to aquire for each gate
-        std::vector<double> inputArrivalTimes; 
+        std::vector<NodeID> fanout_list; //vector of gates connected to this particular gate
+        int inDegree; // number of inputs to this particular gate
+        int outDegree; // number of gates connected to the output of this particular gate
+
+
+
+        std::vector<double> inputArrivalTimes; // input arrival times for each input to the gate
         std::vector<double> outputArrivalTimes; // using the input arrival time vector we determin the ouptput arrival time for each input
-        std::vector<double> inputSlews; 
-        std::vector<double> outputSlews; // using the input slew vector we determin the ouptput slew for each input
-        double outputLoad; 
-        int inDegree;
-        int outDegree;
-        double slewOut; // 
+        std::vector<double> inputSlews; // input slews for each input to the gate
+        std::vector<double> outputSlews; // output slews for each output to the gate
+        double outputLoad; // capacitance of all the gates connected to this gates outputs' summed together
+        double gateSlack; // use backwards traversal to aquire for each gate
+        double slewOut; // actual output slew time from maxamizing the output vector 
         double timeOut; // Actual output time from maximizing the output vector
         double requiredArrivalTime;
         double cellDelay;
 
 
-
+        // constructers
         CircuitNode() :
             node_id_(-1), 
             input_pad_(false), 
             output_pad_(false),
             gate_type_(""), 
             gate_info_(nullptr),
+
             fanin_list_(), 
             fanout_list(),
+
             inDegree(0),
-            outDegree(0)
+            outDegree(0),
+
+            inputArrivalTimes(),
+            outputArrivalTimes(),
+            inputSlews(),
+            outputSlews(),
+
+            outputLoad(0),
+            gateSlack(0),           
+            slewOut(0),
+            timeOut(0),
+
+            requiredArrivalTime(0),
+            cellDelay(0)
             
             { }
         

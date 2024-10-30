@@ -1,6 +1,8 @@
 #include <iostream>
 #include <vector>
 #include <list>
+#include <queue>
+#include <algorithm>
 
 #include "GateDatabase.hpp"
 #include "Circuit.hpp"
@@ -10,13 +12,25 @@ using namespace std;
 bool debug = false;
 
 /**
+ * 
+ */
+void runBackwardTraversal (Circuit &circuit);
+/**
+ * 
+ */
+void runForwardTraversal(Circuit &circuit);
+/**
+ * 
+ */
+void findNodeOutputValues(Circuit &circuit, CircuitNode &circuitNode);
+/**
  * Converts all DFFs in a circuit to act as a simulatenous input and output
  * @param circuit Circuit to execute the function on
  */
 void convertDFFs(Circuit &circuit);
-
 /**
- * 
+ * Populates the fanout lists for each node and an integer to store number of inputs and outputs
+ * @param circuit Circuit to execute the function on
  */
 void createFanOutLists(Circuit &circuit);
 /**
@@ -67,6 +81,8 @@ int main(int argc, char* argv[]) {
 
     convertDFFs(circuit);
     createFanOutLists(circuit);
+    runForwardTraversal(circuit);
+    //runBackwardTraversal(circuit);
 
     cout << circuit.gate_db_.gate_info_lut_["AND"]->capacitance << endl;
     cout << circuit.gate_db_.gate_info_lut_["AND"]->cell_delayindex1[6] << endl;
@@ -74,8 +90,130 @@ int main(int argc, char* argv[]) {
 
     cout << calculateOutputSlew(circuit, "AND", 0.0171859, 15.1443) << endl;
     cout << calculateDelay(circuit, "AND", 0.0171859, 15.1443) << endl;
+    cout << calculateDelay(circuit, "AND", 0.0136039, 6.80091) << endl;
 
     return 0;
+
+}
+
+void runForwardTraversal(Circuit &circuit) {
+    circuit.totalCircuitDelay = 0;
+    queue <CircuitNode*> nodeQueue;
+
+    // adds all inputs to the Queue
+    for (unsigned int nodeNum = 0; nodeNum < circuit.nodes_.size(); nodeNum++) {
+        if (circuit.nodes_[nodeNum] != NULL) {
+            if (circuit.nodes_[nodeNum]->input_pad_ == true) {
+                
+                //nodeQueue.push(circuit.nodes_[nodeNum]);
+
+                circuit.nodes_[nodeNum]->slewOut = 0.002;
+                circuit.nodes_[nodeNum]->timeOut = 0;
+
+                for (unsigned int outputNodeNum = 0; outputNodeNum < circuit.nodes_[nodeNum]->fanout_list.size(); outputNodeNum++) {
+                    unsigned int tempNodeNum = circuit.nodes_[nodeNum]->fanout_list[outputNodeNum];
+
+                    circuit.nodes_[tempNodeNum]->inDegree-= 1;
+
+                    if (circuit.nodes_[tempNodeNum]->inDegree == 0) {
+                        nodeQueue.push(circuit.nodes_[tempNodeNum]);
+                    }
+
+                    circuit.nodes_[nodeNum]->outputLoad+= circuit.nodes_[tempNodeNum]->gate_info_->capacitance;
+                }
+            }
+        }
+    }
+
+    // runs through the rest of the nodes, all we know now is the gate isn't an input
+    while (!nodeQueue.empty()) {
+        CircuitNode* operatingNode = nodeQueue.front();
+        nodeQueue.pop();
+
+        // load all the potential inputs into the node
+        for (unsigned int inputNodeNum = 0; inputNodeNum < operatingNode->fanin_list_.size(); inputNodeNum++) {
+            unsigned int tempNodeNum = operatingNode->fanin_list_[inputNodeNum];
+            operatingNode->inputArrivalTimes.push_back(circuit.nodes_[tempNodeNum]->timeOut);
+            operatingNode->inputSlews.push_back(circuit.nodes_[tempNodeNum]->slewOut);
+        }
+
+        // gate is an output, can't get its capacitance from connected gates.
+        // using the INV capacitance * 4
+        if ((operatingNode->output_pad_) && (operatingNode->outDegree == 0)) {
+            operatingNode->outputLoad = circuit.gate_db_.gate_info_lut_["INV"]->capacitance * 4;            
+        } 
+
+        // gate is not an output, get its capacitance by summing the gates its connected to
+        else {
+            for (unsigned int outputNodeNum = 0; outputNodeNum < operatingNode->fanout_list.size(); outputNodeNum++) {
+                unsigned int tempNodeNum = operatingNode->fanout_list[outputNodeNum];
+                operatingNode->outputLoad += circuit.nodes_[tempNodeNum]->gate_info_->capacitance;
+
+                circuit.nodes_[tempNodeNum]->inDegree-= 1;
+
+                if (circuit.nodes_[tempNodeNum]->inDegree == 0) {
+                    nodeQueue.push(circuit.nodes_[tempNodeNum]);
+                }
+
+            }
+        }
+
+        findNodeOutputValues(circuit, *operatingNode);
+
+    }
+
+
+
+    cout << "Silly" << endl;
+
+
+}
+
+void runBackwardTraversal (Circuit &circuit) {
+
+}
+
+void findNodeOutputValues(Circuit &circuit, CircuitNode &circuitNode) {
+    double loadCap = circuitNode.outputLoad;
+    unsigned int numInputs = circuitNode.inputArrivalTimes.size();
+    double multiplier = 1;
+
+    if (numInputs > 2) {
+        multiplier = numInputs / 2;
+    }
+
+    //calculate the output delay and slews for each input
+    for (unsigned int inputNum = 0; inputNum < numInputs; inputNum++) {
+        double inputTime = circuitNode.inputArrivalTimes[inputNum];
+        double inputSlew = circuitNode.inputSlews[inputNum];
+        double outputDelay = multiplier * calculateDelay(circuit, circuitNode.gate_type_, inputSlew, loadCap);
+        double outputSlew = multiplier * calculateOutputSlew(circuit, circuitNode.gate_type_, inputSlew, loadCap);
+        circuitNode.outputArrivalTimes.push_back(inputTime + outputDelay);
+        circuitNode.outputSlews.push_back(outputSlew);
+    }
+
+    for (unsigned int inputNum = 0; inputNum < numInputs; inputNum++) {
+        double inputTime = circuitNode.inputArrivalTimes[inputNum];
+        double inputSlew = circuitNode.inputSlews[inputNum];
+        double outputDelay = multiplier * calculateDelay(circuit, circuitNode.gate_type_, inputSlew, loadCap);
+        double outputSlew = multiplier * calculateOutputSlew(circuit, circuitNode.gate_type_, inputSlew, loadCap);
+        double timeOut = inputTime + outputDelay;
+        if (timeOut > circuitNode.timeOut) {
+            circuitNode.timeOut = timeOut;
+            circuitNode.slewOut = outputSlew;
+            circuitNode.cellDelay = outputDelay;
+        }
+    }
+
+    //double timeOut = *max_element (circuitNode.outputArrivalTimes.begin(), circuitNode.outputArrivalTimes.end());
+    // circuitNode.timeOut = timeOut;
+
+    // for (unsigned int iterator = 0; iterator < circuitNode.outputArrivalTimes.size(); iterator++) {
+    //     if (timeOut == circuitNode.outputArrivalTimes[iterator]) {
+    //         circuitNode.slewOut = circuitNode.outputSlews[iterator];
+    //         circuitNode.cellDelay = circuitNode.outputArrivalTimes[iterator] - circuitNode.inputArrivalTimes[iterator];
+    //     }
+    // }
 
 }
 
@@ -113,7 +251,6 @@ void createFanOutLists(Circuit &circuit) {
     }
 }
 
-
 double calculateOutputSlew(Circuit &circuit, string gateType, double inputSlew, double loadCapacitance) {
     int slewIndex = -1;
     int capacitanceIndex = -1;
@@ -131,8 +268,9 @@ double calculateOutputSlew(Circuit &circuit, string gateType, double inputSlew, 
     }
 
     if (slewIndex == -1) {
-        cout << "ERROR: Input Slew out of range" << endl;
-        return -1;
+        cout << "ERROR: Input Slew out of range: " << inputSlew << endl;
+        slewIndex = 0;
+        //return -1;
     }
 
     for (int i = 0; i < GATE_LUT_DIM-1; i++) {
@@ -145,8 +283,9 @@ double calculateOutputSlew(Circuit &circuit, string gateType, double inputSlew, 
     }
 
     if (capacitanceIndex == -1) {
-        cout << "ERROR: Load Capacitance out of range" << endl;
-        return -1;
+        cout << "ERROR: Load Capacitance out of range: " << loadCapacitance << endl;
+        capacitanceIndex = 0;
+        //return -1;
     }
 
     if (debug)
@@ -186,8 +325,9 @@ double calculateDelay(Circuit &circuit, string gateType, double inputSlew, doubl
     }
 
     if (slewIndex == -1) {
-        cout << "ERROR: Input Slew out of range" << endl;
-        return -1;
+        cout << "ERROR: Input Slew out of range:" << inputSlew << endl;
+        //return -1;
+        slewIndex = 0;
     }
 
     for (int i = 0; i < GATE_LUT_DIM-1; i++) {
@@ -200,8 +340,9 @@ double calculateDelay(Circuit &circuit, string gateType, double inputSlew, doubl
     }
 
     if (capacitanceIndex == -1) {
-        cout << "ERROR: Load Capacitance out of range" << endl;
-        return -1;
+        cout << "ERROR: Load Capacitance out of range: " << loadCapacitance << endl;
+        capacitanceIndex = 0;
+        //return -1;
     }
 
     if (debug)

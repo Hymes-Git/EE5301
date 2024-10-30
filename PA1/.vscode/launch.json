@@ -9,7 +9,7 @@
             "type": "cppdbg",
             "request": "launch",
             "program": "${workspaceFolder}/sta",
-            "args": ["${workspaceFolder}/NLDM_lib_max2Inp", "${workspaceFolder}/c17.isc", "silly"],
+            "args": ["${workspaceFolder}/NLDM_lib_max2Inp", "${workspaceFolder}/b15_1.isc", "silly"],
             "stopAtEntry": false,
             "cwd": "${fileDirname}",
             "environment": [],

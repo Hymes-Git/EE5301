@@ -15,5 +15,5 @@ INPUT (12)
 13 = INV(12)
 14 = DFF(13)
 15 = AND( 10, 14)
-OUTPUT (15g)
+OUTPUT (15)
 
