@@ -267,10 +267,24 @@ double calculateOutputSlew(Circuit &circuit, string gateType, double inputSlew, 
         }
     }
 
+    // if (slewIndex == -1) {
+    //     cout << "ERROR: Input Slew out of range: " << inputSlew << endl;
+    //     slewIndex = 0;
+    //     //return -1;
+    // }
+
     if (slewIndex == -1) {
-        cout << "ERROR: Input Slew out of range: " << inputSlew << endl;
-        slewIndex = 0;
-        //return -1;
+        if (inputSlew < circuit.gate_db_.gate_info_lut_[gateType]->output_slewindex1[0]) {
+            T1 = circuit.gate_db_.gate_info_lut_[gateType]->output_slewindex1[0];
+            T2 = circuit.gate_db_.gate_info_lut_[gateType]->output_slewindex1[1];
+            inputSlew = circuit.gate_db_.gate_info_lut_[gateType]->output_slewindex1[0];
+        } else if (inputSlew > circuit.gate_db_.gate_info_lut_[gateType]->output_slewindex1[GATE_LUT_DIM-1]) {
+            T1 = circuit.gate_db_.gate_info_lut_[gateType]->output_slewindex1[GATE_LUT_DIM-2];
+            T2 = circuit.gate_db_.gate_info_lut_[gateType]->output_slewindex1[GATE_LUT_DIM-1];
+            inputSlew = circuit.gate_db_.gate_info_lut_[gateType]->output_slewindex1[GATE_LUT_DIM-1];
+        } else {
+            cout << "ERROR: Unknown Program should not get here, Input Slew: " << inputSlew << endl;
+        }       
     }
 
     for (int i = 0; i < GATE_LUT_DIM-1; i++) {
@@ -282,10 +296,24 @@ double calculateOutputSlew(Circuit &circuit, string gateType, double inputSlew, 
         }
     }
 
+    // if (capacitanceIndex == -1) {
+    //     cout << "ERROR: Load Capacitance out of range: " << loadCapacitance << endl;
+    //     capacitanceIndex = 0;
+    //     //return -1;
+    // }
+
     if (capacitanceIndex == -1) {
-        cout << "ERROR: Load Capacitance out of range: " << loadCapacitance << endl;
-        capacitanceIndex = 0;
-        //return -1;
+        if (loadCapacitance < circuit.gate_db_.gate_info_lut_[gateType]->output_slewindex2[0]) {
+            C1 = circuit.gate_db_.gate_info_lut_[gateType]->output_slewindex2[0];
+            C2 = circuit.gate_db_.gate_info_lut_[gateType]->output_slewindex2[1];
+            loadCapacitance = circuit.gate_db_.gate_info_lut_[gateType]->output_slewindex2[0];
+        } else if (loadCapacitance > circuit.gate_db_.gate_info_lut_[gateType]->output_slewindex2[GATE_LUT_DIM-1]) {
+            C1 = circuit.gate_db_.gate_info_lut_[gateType]->output_slewindex2[GATE_LUT_DIM-2];
+            C2 = circuit.gate_db_.gate_info_lut_[gateType]->output_slewindex2[GATE_LUT_DIM-1];
+            loadCapacitance = circuit.gate_db_.gate_info_lut_[gateType]->output_slewindex2[GATE_LUT_DIM-1];
+        } else {
+            cout << "ERROR: Program should not get here, Load Capacitance: " << loadCapacitance << endl;
+        }
     }
 
     if (debug)
@@ -324,10 +352,24 @@ double calculateDelay(Circuit &circuit, string gateType, double inputSlew, doubl
         }
     }
 
+    // if (slewIndex == -1) {
+    //     cout << "ERROR: Input Slew out of range: " << inputSlew << endl;
+    //     //return -1;
+    //     slewIndex = 0;
+    // }
+
     if (slewIndex == -1) {
-        cout << "ERROR: Input Slew out of range:" << inputSlew << endl;
-        //return -1;
-        slewIndex = 0;
+        if (inputSlew < circuit.gate_db_.gate_info_lut_[gateType]->cell_delayindex1[0]) {
+            T1 = circuit.gate_db_.gate_info_lut_[gateType]->cell_delayindex1[0];
+            T2 = circuit.gate_db_.gate_info_lut_[gateType]->cell_delayindex1[1];
+            inputSlew = circuit.gate_db_.gate_info_lut_[gateType]->cell_delayindex1[0];
+        } else if (inputSlew > circuit.gate_db_.gate_info_lut_[gateType]->cell_delayindex1[GATE_LUT_DIM-1]) {
+            T1 = circuit.gate_db_.gate_info_lut_[gateType]->cell_delayindex1[GATE_LUT_DIM-2];
+            T2 = circuit.gate_db_.gate_info_lut_[gateType]->cell_delayindex1[GATE_LUT_DIM-1];
+            inputSlew = circuit.gate_db_.gate_info_lut_[gateType]->cell_delayindex1[GATE_LUT_DIM-1];
+        } else {
+            cout << "ERROR: Unknown Program should not get here, Input Slew: " << inputSlew << endl;
+        }       
     }
 
     for (int i = 0; i < GATE_LUT_DIM-1; i++) {
@@ -339,10 +381,25 @@ double calculateDelay(Circuit &circuit, string gateType, double inputSlew, doubl
         }
     }
 
+    // if (capacitanceIndex == -1) {
+    //     cout << "ERROR: Load Capacitance out of range: " << loadCapacitance << endl;
+    //     capacitanceIndex = 0;
+    //     //return -1;
+    // }
+
     if (capacitanceIndex == -1) {
-        cout << "ERROR: Load Capacitance out of range: " << loadCapacitance << endl;
-        capacitanceIndex = 0;
-        //return -1;
+        if (loadCapacitance < circuit.gate_db_.gate_info_lut_[gateType]->cell_delayindex2[0]) {
+            C1 = circuit.gate_db_.gate_info_lut_[gateType]->cell_delayindex2[0];
+            C2 = circuit.gate_db_.gate_info_lut_[gateType]->cell_delayindex2[1];
+            loadCapacitance = circuit.gate_db_.gate_info_lut_[gateType]->cell_delayindex2[0];
+        } else if (loadCapacitance > circuit.gate_db_.gate_info_lut_[gateType]->cell_delayindex2[GATE_LUT_DIM-1]) {
+            C1 = circuit.gate_db_.gate_info_lut_[gateType]->cell_delayindex2[GATE_LUT_DIM-2];
+            C2 = circuit.gate_db_.gate_info_lut_[gateType]->cell_delayindex2[GATE_LUT_DIM-1];
+            loadCapacitance = circuit.gate_db_.gate_info_lut_[gateType]->cell_delayindex2[GATE_LUT_DIM-1];
+        } else {
+            cout << "ERROR: Program should not get here, Load Capacitance: " << loadCapacitance << endl;
+            cout << "Bounds: (" << circuit.gate_db_.gate_info_lut_[gateType]->cell_delayindex2[0] << ", " << circuit.gate_db_.gate_info_lut_[gateType]->cell_delayindex2[GATE_LUT_DIM-1] << ")" << endl; 
+        }
     }
 
     if (debug)
