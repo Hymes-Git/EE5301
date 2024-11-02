@@ -222,9 +222,10 @@ void findNodeOutputValues(Circuit &circuit, CircuitNode &circuitNode) {
         double inputTime = circuitNode.inputArrivalTimes[inputNum];
         double inputSlew = circuitNode.inputSlews[inputNum];
         double outputDelay = multiplier * calculateDelay(circuit, circuitNode.gate_type_, inputSlew, loadCap);
-        double outputSlew = multiplier * calculateOutputSlew(circuit, circuitNode.gate_type_, inputSlew, loadCap);
-        circuitNode.gateDelays.push_back(outputDelay);
+        double outputSlew = multiplier * calculateOutputSlew(circuit, circuitNode.gate_type_, inputSlew, loadCap);   
         double timeOut = inputTime + outputDelay;
+        circuitNode.gateDelays.push_back(outputDelay);
+        circuitNode.outputArrivalTimes.push_back(timeOut);
         if (timeOut > circuitNode.timeOut) {
             circuitNode.timeOut = timeOut;
             circuitNode.slewOut = outputSlew;
