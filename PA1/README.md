@@ -15,6 +15,6 @@ main.cpp
 
 contains functions nessecary for PA1, forward traversal, backward traversal, critical path finder and the final output function as well as helper functions
 
-Makefil
+Makefile
 
 allows for easy compilation of the project, simply compile the progrram by running 'make' in the terminal. The executable will be 'sta'
