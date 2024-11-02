@@ -256,7 +256,7 @@ void runBackwardTraversal (Circuit &circuit) {
                 circuit.nodes_[nodeNum]->requiredArrivalTime = requiredTime;
                 circuit.nodes_[nodeNum]->gateSlack = circuit.nodes_[nodeNum]->requiredArrivalTime - circuit.nodes_[nodeNum]->timeOut;
 
-                for (unsigned int inputNodeNum; inputNodeNum < circuit.nodes_[nodeNum]->fanin_list_.size(); inputNodeNum++) {
+                for (unsigned int inputNodeNum = 0; inputNodeNum < circuit.nodes_[nodeNum]->fanin_list_.size(); inputNodeNum++) {
                     unsigned int tempNodeNum = circuit.nodes_[nodeNum]->fanin_list_[inputNodeNum];
 
                     circuit.nodes_[tempNodeNum]->outDegree -= 1;
@@ -275,7 +275,7 @@ void runBackwardTraversal (Circuit &circuit) {
         nodeQueue.pop();
         double tempRequiredTime = requiredTime;
 
-        for (unsigned int outputNodeNum; outputNodeNum < operatingNode->fanout_list.size(); outputNodeNum++) {
+        for (unsigned int outputNodeNum = 0; outputNodeNum < operatingNode->fanout_list.size(); outputNodeNum++) {
             unsigned int tempNodeNum = operatingNode->fanout_list[outputNodeNum];
 
             // find delay between two particular gates
@@ -345,17 +345,19 @@ vector <CircuitNode*> findCriticalPath (Circuit &circuit) {
 
         double minSlack = numeric_limits<double>::max();
 
+        CircuitNode* tempMinSlackNode;
 
         // find node with smallest slack
         for (unsigned int nodeNum = 0; nodeNum < minSlackNode->fanin_list_.size(); nodeNum++) {
             unsigned int inputNodeNum = minSlackNode->fanin_list_[nodeNum];
             if (circuit.nodes_[inputNodeNum]->gateSlack < minSlack) {
-                minSlackNode = circuit.nodes_[inputNodeNum];
+                tempMinSlackNode = circuit.nodes_[inputNodeNum];
                 minSlack = circuit.nodes_[inputNodeNum]->gateSlack;
             }
         }
 
-        criticalPath.push_back(minSlackNode);
+        criticalPath.push_back(tempMinSlackNode);
+        minSlackNode = tempMinSlackNode;
 
     }
 
