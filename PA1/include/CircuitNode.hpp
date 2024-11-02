@@ -28,6 +28,7 @@ class CircuitNode {
 
         std::vector<double> inputArrivalTimes; // input arrival times for each input to the gate
         std::vector<double> outputArrivalTimes; // using the input arrival time vector we determin the ouptput arrival time for each input
+        std::vector<double> gateDelays;
         std::vector<double> inputSlews; // input slews for each input to the gate
         std::vector<double> outputSlews; // output slews for each output to the gate
         double outputLoad; // capacitance of all the gates connected to this gates outputs' summed together
@@ -54,6 +55,7 @@ class CircuitNode {
 
             inputArrivalTimes(),
             outputArrivalTimes(),
+            gateDelays(),
             inputSlews(),
             outputSlews(),
 

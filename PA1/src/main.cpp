@@ -43,7 +43,7 @@ vector <CircuitNode*> findCriticalPath (Circuit &circuit);
  * Output the required information about the gate, which is circuit delay, gate slacks and the critical path
  * @param circuit the circuit to output information about
  */
-void outputCircuitTraversal (Circuit &circuit, vector <CircuitNode*> &criticalPath, string outputFile);
+void outputCircuitTraversal (Circuit &circuit, vector <CircuitNode*> &criticalPath, string outputFile, bool printToTerminal);
 /**
  * Converts all DFFs in a circuit to act as a simulatenous input and output
  * @param circuit Circuit to execute the function on
@@ -105,7 +105,7 @@ int main(int argc, char* argv[]) {
     runForwardTraversal(circuit);
     runBackwardTraversal(circuit);
     vector <CircuitNode*> criticalPath = findCriticalPath(circuit);
-    outputCircuitTraversal(circuit, criticalPath, "ckt_traversal.txt");
+    outputCircuitTraversal(circuit, criticalPath, "ckt_traversal.txt", 0);
 
     // cout << circuit.gate_db_.gate_info_lut_["AND"]->capacitance << endl;
     // cout << circuit.gate_db_.gate_info_lut_["AND"]->cell_delayindex1[6] << endl;
@@ -223,6 +223,7 @@ void findNodeOutputValues(Circuit &circuit, CircuitNode &circuitNode) {
         double inputSlew = circuitNode.inputSlews[inputNum];
         double outputDelay = multiplier * calculateDelay(circuit, circuitNode.gate_type_, inputSlew, loadCap);
         double outputSlew = multiplier * calculateOutputSlew(circuit, circuitNode.gate_type_, inputSlew, loadCap);
+        circuitNode.gateDelays.push_back(outputDelay);
         double timeOut = inputTime + outputDelay;
         if (timeOut > circuitNode.timeOut) {
             circuitNode.timeOut = timeOut;
@@ -365,7 +366,7 @@ vector <CircuitNode*> findCriticalPath (Circuit &circuit) {
   
 }
 
-void outputCircuitTraversal (Circuit &circuit, vector <CircuitNode*> &criticalPath, string outputFile) {
+void outputCircuitTraversal (Circuit &circuit, vector <CircuitNode*> &criticalPath, string outputFile, bool printToTerminal) {
     ofstream fileOut;
     fileOut.open(outputFile);
     
@@ -401,8 +402,10 @@ void outputCircuitTraversal (Circuit &circuit, vector <CircuitNode*> &criticalPa
         } 
     }
 
+    if (printToTerminal) {
+     cout << output.str();       
+    }
 
-    cout << output.str();
     fileOut << output.str();
 
     fileOut.close();

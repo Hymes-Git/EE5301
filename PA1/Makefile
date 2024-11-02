@@ -9,8 +9,8 @@ SOURCES=$(shell find $(SRC_DIR) -type f -name *.cpp)
 # Source: https://www.gnu.org/software/make/manual/html_node/Text-Functions.html
 OBJECTS=$(patsubst $(SRC_DIR)/%,$(BUID_DIR)/%,$(SOURCES:.cpp=.o))
 # Enable all warning, use C++11, Optimization level 3
-#CFLAGS=-Wall -std=c++11 -O3
-CFLAGS=-Wall -std=c++11 -g
+CFLAGS=-Wall -std=c++11 -O3
+#CFLAGS=-Wall -std=c++11 -g
 # Use the header files inside the "include" folder
 INC=-I include
 
