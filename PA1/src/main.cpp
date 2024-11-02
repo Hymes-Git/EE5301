@@ -177,7 +177,6 @@ void runForwardTraversal(Circuit &circuit) {
                 if (circuit.nodes_[tempNodeNum]->inDegree == 0) {
                     nodeQueue.push(circuit.nodes_[tempNodeNum]);
                 }
-
             }
         }
 
@@ -189,14 +188,11 @@ void runForwardTraversal(Circuit &circuit) {
                 circuit.totalCircuitDelay = operatingNode->timeOut;
             }
         } 
-
     }
 
-
-
-    int silly = 42;
-
-
+    if (debug) {
+        cout << "Finished Running Traversals" << endl;
+    }
 }
 
 void findNodeOutputValues(Circuit &circuit, CircuitNode &circuitNode) {
@@ -207,16 +203,6 @@ void findNodeOutputValues(Circuit &circuit, CircuitNode &circuitNode) {
     if (numInputs > 2) {
         multiplier = numInputs / 2;
     }
-
-    //calculate the output delay and slews for each input
-    // for (unsigned int inputNum = 0; inputNum < numInputs; inputNum++) {
-    //     double inputTime = circuitNode.inputArrivalTimes[inputNum];
-    //     double inputSlew = circuitNode.inputSlews[inputNum];
-    //     double outputDelay = multiplier * calculateDelay(circuit, circuitNode.gate_type_, inputSlew, loadCap);
-    //     double outputSlew = multiplier * calculateOutputSlew(circuit, circuitNode.gate_type_, inputSlew, loadCap);
-    //     circuitNode.outputArrivalTimes.push_back(inputTime + outputDelay);
-    //     circuitNode.outputSlews.push_back(outputSlew);
-    // }
 
     for (unsigned int inputNum = 0; inputNum < numInputs; inputNum++) {
         double inputTime = circuitNode.inputArrivalTimes[inputNum];
@@ -232,17 +218,6 @@ void findNodeOutputValues(Circuit &circuit, CircuitNode &circuitNode) {
             circuitNode.cellDelay = outputDelay;
         }
     }
-
-    //double timeOut = *max_element (circuitNode.outputArrivalTimes.begin(), circuitNode.outputArrivalTimes.end());
-    // circuitNode.timeOut = timeOut;
-
-    // for (unsigned int iterator = 0; iterator < circuitNode.outputArrivalTimes.size(); iterator++) {
-    //     if (timeOut == circuitNode.outputArrivalTimes[iterator]) {
-    //         circuitNode.slewOut = circuitNode.outputSlews[iterator];
-    //         circuitNode.cellDelay = circuitNode.outputArrivalTimes[iterator] - circuitNode.inputArrivalTimes[iterator];
-    //     }
-    // }
-
 }
 
 void runBackwardTraversal (Circuit &circuit) {
@@ -280,14 +255,26 @@ void runBackwardTraversal (Circuit &circuit) {
         for (unsigned int outputNodeNum = 0; outputNodeNum < operatingNode->fanout_list.size(); outputNodeNum++) {
             unsigned int tempNodeNum = operatingNode->fanout_list[outputNodeNum];
 
-            // find delay between two particular gates
-            double multiplier = 1;
-            if (circuit.nodes_[tempNodeNum]->fanin_list_.size() > 2) {
-                multiplier = circuit.nodes_[tempNodeNum]->fanin_list_.size() / 2;
-            }
-            double cellDelay = multiplier * calculateDelay(circuit, circuit.nodes_[tempNodeNum]->gate_type_, operatingNode->slewOut, circuit.nodes_[tempNodeNum]->outputLoad);
+            double tempTempRequiredTime;
 
-            double tempTempRequiredTime = circuit.nodes_[tempNodeNum]->requiredArrivalTime - cellDelay;
+            // for the output node find the input delay associated with operating node
+            CircuitNode* otherGate = circuit.nodes_[tempNodeNum];
+            for (unsigned int inputNodeNum = 0; inputNodeNum < otherGate->fanin_list_.size(); inputNodeNum++) {
+                if (otherGate->fanin_list_[inputNodeNum] == operatingNode->node_id_) {
+                    tempTempRequiredTime = otherGate->requiredArrivalTime - otherGate->gateDelays[inputNodeNum];
+                    break;
+                }
+            }
+
+            // // find delay between two particular gates
+            // double multiplier = 1;
+            // if (circuit.nodes_[tempNodeNum]->fanin_list_.size() > 2) {
+            //     multiplier = circuit.nodes_[tempNodeNum]->fanin_list_.size() / 2;
+            // }
+            // double cellDelay = multiplier * calculateDelay(circuit, circuit.nodes_[tempNodeNum]->gate_type_, operatingNode->slewOut, circuit.nodes_[tempNodeNum]->outputLoad);
+
+            
+            // double tempTempRequiredTime = circuit.nodes_[tempNodeNum]->requiredArrivalTime - cellDelay;
 
             if (tempTempRequiredTime < tempRequiredTime) {
                 tempRequiredTime = tempTempRequiredTime;
@@ -306,12 +293,8 @@ void runBackwardTraversal (Circuit &circuit) {
             if (circuit.nodes_[tempNodeNum]->outDegree == 0) {
                 nodeQueue.push(circuit.nodes_[tempNodeNum]);
             }
-
         }
-
-
     }
-
 }
 
 vector <CircuitNode*> findCriticalPath (Circuit &circuit) {
@@ -333,19 +316,15 @@ vector <CircuitNode*> findCriticalPath (Circuit &circuit) {
 
     criticalPath.push_back(minSlackNode);
 
-
-
     // iterate through remaining nodes in critical path
     while(1) {
-
 
         // found input pad, we are done.
         if (minSlackNode->input_pad_) {
             break;
         }
 
-
-        double minSlack = numeric_limits<double>::max();
+        double minSlack = numeric_limits<double>::max(); // set minSlack to maxDouble
 
         CircuitNode* tempMinSlackNode;
 
