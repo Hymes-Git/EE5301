@@ -3,6 +3,11 @@
 #include <list>
 #include <queue>
 #include <algorithm>
+#include <limits>
+#include <string>
+#include <fstream>
+#include <sstream>
+#include <iomanip>
 
 #include "GateDatabase.hpp"
 #include "Circuit.hpp"
@@ -11,18 +16,34 @@ using namespace std;
 
 bool debug = false;
 
+
 /**
- * 
- */
-void runBackwardTraversal (Circuit &circuit);
-/**
- * 
+ * Traverse the graph forward to find the arrival time at each of the gates
+ * @param circuit the circuit to find the arrival time at each gate of
  */
 void runForwardTraversal(Circuit &circuit);
 /**
- * 
+ * Given a node, find the arrival time at that node
+ * @param circuit the circuit the node exists in
+ * @param cirduitNode the node to find arrival time at
  */
 void findNodeOutputValues(Circuit &circuit, CircuitNode &circuitNode);
+/**
+ * Traverse the graph backward to find the slack at each of the gates
+ * @param circuit the circuit to the find the slack at each gate of
+ */
+void runBackwardTraversal (Circuit &circuit);
+/**
+ * Find the critical path in a graph, i.e. path with the minimum slews
+ * @param circuit the circuit to run the function on
+ * @return returns a vector containing the nodes along the critical path
+ */
+vector <CircuitNode*> findCriticalPath (Circuit &circuit);
+/**
+ * Output the required information about the gate, which is circuit delay, gate slacks and the critical path
+ * @param circuit the circuit to output information about
+ */
+void outputCircuitTraversal (Circuit &circuit, vector <CircuitNode*> &criticalPath, string outputFile);
 /**
  * Converts all DFFs in a circuit to act as a simulatenous input and output
  * @param circuit Circuit to execute the function on
@@ -75,22 +96,24 @@ int main(int argc, char* argv[]) {
 
     Circuit circuit (circuitFile, libraryFile); // instantiate the circuit
 
-    if (debug) {
+   if (debug) {
         cout << "Finished Parsing Library and Circuit Files" << endl;
-    }
+   }
 
     convertDFFs(circuit);
     createFanOutLists(circuit);
     runForwardTraversal(circuit);
-    //runBackwardTraversal(circuit);
+    runBackwardTraversal(circuit);
+    vector <CircuitNode*> criticalPath = findCriticalPath(circuit);
+    outputCircuitTraversal(circuit, criticalPath, "ckt_traversal.txt");
 
-    cout << circuit.gate_db_.gate_info_lut_["AND"]->capacitance << endl;
-    cout << circuit.gate_db_.gate_info_lut_["AND"]->cell_delayindex1[6] << endl;
-    cout << circuit.gate_db_.gate_info_lut_["NOR"]->output_slewindex2[3] << endl;
+    // cout << circuit.gate_db_.gate_info_lut_["AND"]->capacitance << endl;
+    // cout << circuit.gate_db_.gate_info_lut_["AND"]->cell_delayindex1[6] << endl;
+    // cout << circuit.gate_db_.gate_info_lut_["NOR"]->output_slewindex2[3] << endl;
 
-    cout << calculateOutputSlew(circuit, "AND", 0.0171859, 15.1443) << endl;
-    cout << calculateDelay(circuit, "AND", 0.0171859, 15.1443) << endl;
-    cout << calculateDelay(circuit, "AND", 0.0136039, 6.80091) << endl;
+    // cout << calculateOutputSlew(circuit, "AND", 0.0171859, 15.1443) << endl;
+    // cout << calculateDelay(circuit, "AND", 0.0171859, 15.1443) << endl;
+    // cout << calculateDelay(circuit, "AND", 0.0136039, 6.80091) << endl;
 
     return 0;
 
@@ -160,16 +183,19 @@ void runForwardTraversal(Circuit &circuit) {
 
         findNodeOutputValues(circuit, *operatingNode);
 
+        // if the gate is an output check if its now the output with the largest delay
+        if ((operatingNode->output_pad_) && (operatingNode->outDegree == 0)) {
+            if (operatingNode->timeOut > circuit.totalCircuitDelay) {
+                circuit.totalCircuitDelay = operatingNode->timeOut;
+            }
+        } 
+
     }
 
 
 
-    cout << "Silly" << endl;
+    int silly = 42;
 
-
-}
-
-void runBackwardTraversal (Circuit &circuit) {
 
 }
 
@@ -183,14 +209,14 @@ void findNodeOutputValues(Circuit &circuit, CircuitNode &circuitNode) {
     }
 
     //calculate the output delay and slews for each input
-    for (unsigned int inputNum = 0; inputNum < numInputs; inputNum++) {
-        double inputTime = circuitNode.inputArrivalTimes[inputNum];
-        double inputSlew = circuitNode.inputSlews[inputNum];
-        double outputDelay = multiplier * calculateDelay(circuit, circuitNode.gate_type_, inputSlew, loadCap);
-        double outputSlew = multiplier * calculateOutputSlew(circuit, circuitNode.gate_type_, inputSlew, loadCap);
-        circuitNode.outputArrivalTimes.push_back(inputTime + outputDelay);
-        circuitNode.outputSlews.push_back(outputSlew);
-    }
+    // for (unsigned int inputNum = 0; inputNum < numInputs; inputNum++) {
+    //     double inputTime = circuitNode.inputArrivalTimes[inputNum];
+    //     double inputSlew = circuitNode.inputSlews[inputNum];
+    //     double outputDelay = multiplier * calculateDelay(circuit, circuitNode.gate_type_, inputSlew, loadCap);
+    //     double outputSlew = multiplier * calculateOutputSlew(circuit, circuitNode.gate_type_, inputSlew, loadCap);
+    //     circuitNode.outputArrivalTimes.push_back(inputTime + outputDelay);
+    //     circuitNode.outputSlews.push_back(outputSlew);
+    // }
 
     for (unsigned int inputNum = 0; inputNum < numInputs; inputNum++) {
         double inputTime = circuitNode.inputArrivalTimes[inputNum];
@@ -215,6 +241,169 @@ void findNodeOutputValues(Circuit &circuit, CircuitNode &circuitNode) {
     //     }
     // }
 
+}
+
+void runBackwardTraversal (Circuit &circuit) {
+
+    double requiredTime;
+    requiredTime = 1.1 * circuit.totalCircuitDelay;
+    queue <CircuitNode*> nodeQueue;
+
+    // deal with all the output nodes first
+    for (unsigned int nodeNum = 0; nodeNum < circuit.nodes_.size(); nodeNum++) {
+        if (circuit.nodes_[nodeNum] != NULL) {
+            if (circuit.nodes_[nodeNum]->output_pad_== true) {
+                circuit.nodes_[nodeNum]->requiredArrivalTime = requiredTime;
+                circuit.nodes_[nodeNum]->gateSlack = circuit.nodes_[nodeNum]->requiredArrivalTime - circuit.nodes_[nodeNum]->timeOut;
+
+                for (unsigned int inputNodeNum; inputNodeNum < circuit.nodes_[nodeNum]->fanin_list_.size(); inputNodeNum++) {
+                    unsigned int tempNodeNum = circuit.nodes_[nodeNum]->fanin_list_[inputNodeNum];
+
+                    circuit.nodes_[tempNodeNum]->outDegree -= 1;
+
+                    if (circuit.nodes_[tempNodeNum]->outDegree == 0) {
+                        nodeQueue.push(circuit.nodes_[tempNodeNum]);
+                    }
+                }
+            }
+        }
+    }
+
+    // the non-output nodes remain
+    while (!nodeQueue.empty()) {
+        CircuitNode* operatingNode = nodeQueue.front();
+        nodeQueue.pop();
+        double tempRequiredTime = requiredTime;
+
+        for (unsigned int outputNodeNum; outputNodeNum < operatingNode->fanout_list.size(); outputNodeNum++) {
+            unsigned int tempNodeNum = operatingNode->fanout_list[outputNodeNum];
+
+            // find delay between two particular gates
+            double multiplier = 1;
+            if (circuit.nodes_[tempNodeNum]->fanin_list_.size() > 2) {
+                multiplier = circuit.nodes_[tempNodeNum]->fanin_list_.size() / 2;
+            }
+            double cellDelay = multiplier * calculateDelay(circuit, circuit.nodes_[tempNodeNum]->gate_type_, operatingNode->slewOut, circuit.nodes_[tempNodeNum]->outputLoad);
+
+            double tempTempRequiredTime = circuit.nodes_[tempNodeNum]->requiredArrivalTime - cellDelay;
+
+            if (tempTempRequiredTime < tempRequiredTime) {
+                tempRequiredTime = tempTempRequiredTime;
+            }
+            
+        }
+
+        operatingNode->requiredArrivalTime = tempRequiredTime;
+        operatingNode->gateSlack = operatingNode->requiredArrivalTime - operatingNode->timeOut;
+
+        for (unsigned int inputNodeNum = 0; inputNodeNum < operatingNode->fanin_list_.size(); inputNodeNum++) {
+            unsigned int tempNodeNum = operatingNode->fanin_list_[inputNodeNum];
+            
+            circuit.nodes_[tempNodeNum]->outDegree -= 1;
+
+            if (circuit.nodes_[tempNodeNum]->outDegree == 0) {
+                nodeQueue.push(circuit.nodes_[tempNodeNum]);
+            }
+
+        }
+
+
+    }
+
+}
+
+vector <CircuitNode*> findCriticalPath (Circuit &circuit) {
+    vector <CircuitNode*> criticalPath;
+    CircuitNode* minSlackNode;
+    double minSlack = numeric_limits<double>::max();
+
+    // find output node with smallest slack
+    for (unsigned int nodeNum = 0; nodeNum < circuit.nodes_.size(); nodeNum++) {
+        if (circuit.nodes_[nodeNum] != NULL) {
+            if (circuit.nodes_[nodeNum]->output_pad_) {
+                if (circuit.nodes_[nodeNum]->gateSlack < minSlack) {
+                    minSlack = circuit.nodes_[nodeNum]->gateSlack;
+                    minSlackNode = circuit.nodes_[nodeNum];
+                }
+            }
+        }
+    }
+
+    criticalPath.push_back(minSlackNode);
+
+
+
+    // iterate through remaining nodes in critical path
+    while(1) {
+
+
+        // found input pad, we are done.
+        if (minSlackNode->input_pad_) {
+            break;
+        }
+
+
+        double minSlack = numeric_limits<double>::max();
+
+
+        // find node with smallest slack
+        for (unsigned int nodeNum = 0; nodeNum < minSlackNode->fanin_list_.size(); nodeNum++) {
+            unsigned int inputNodeNum = minSlackNode->fanin_list_[nodeNum];
+            if (circuit.nodes_[inputNodeNum]->gateSlack < minSlack) {
+                minSlackNode = circuit.nodes_[inputNodeNum];
+                minSlack = circuit.nodes_[inputNodeNum]->gateSlack;
+            }
+        }
+
+        criticalPath.push_back(minSlackNode);
+
+    }
+
+    return criticalPath;
+  
+}
+
+void outputCircuitTraversal (Circuit &circuit, vector <CircuitNode*> &criticalPath, string outputFile) {
+    ofstream fileOut;
+    fileOut.open(outputFile);
+    
+    if (!fileOut.is_open()) {
+        cout << "ERROR: Unable to open file: " << outputFile << endl;
+        return;
+    }
+
+    ostringstream output;
+
+    output << fixed << setprecision(2) << "Circuit delay: " << circuit.totalCircuitDelay*1000 << " ps" << endl;
+    output << endl;
+    output << "Gate slacks:" << endl;
+
+    for (unsigned int nodeNum = 0; nodeNum < circuit.nodes_.size(); nodeNum++) {
+        if (circuit.nodes_[nodeNum] != NULL) {
+
+            if (circuit.nodes_[nodeNum]->input_pad_) {
+                circuit.nodes_[nodeNum]->gate_type_ = "INP";
+            }
+
+            output << circuit.nodes_[nodeNum]->gate_type_ << "-n" << nodeNum << ": " << 1000*circuit.nodes_[nodeNum]->gateSlack << " ps" << endl;
+        }
+    }
+
+    output << endl;
+    output << "Critical path:" << endl;
+
+    for (int critPathIndex = criticalPath.size()-1; critPathIndex >= 0; critPathIndex--) {
+        output << criticalPath[critPathIndex]->gate_type_ << "-n" << to_string(criticalPath[critPathIndex]->node_id_);
+        if (critPathIndex != 0) {
+            output << ", ";
+        } 
+    }
+
+
+    cout << output.str();
+    fileOut << output.str();
+
+    fileOut.close();
 }
 
 void convertDFFs(Circuit &circuit) {
@@ -254,8 +443,8 @@ void createFanOutLists(Circuit &circuit) {
 double calculateOutputSlew(Circuit &circuit, string gateType, double inputSlew, double loadCapacitance) {
     int slewIndex = -1;
     int capacitanceIndex = -1;
-    double C1, C2, T1, T2;
-    double V11, V12, V21, V22;
+    double C1, C2, T1, T2 = 0;
+    double V11, V12, V21, V22 = 0;
     double outputSlew;
 
     for (int i = 0; i < GATE_LUT_DIM-1; i++) {
@@ -339,8 +528,8 @@ double calculateOutputSlew(Circuit &circuit, string gateType, double inputSlew, 
 double calculateDelay(Circuit &circuit, string gateType, double inputSlew, double loadCapacitance) {
     int slewIndex = -1;
     int capacitanceIndex = -1;
-    double C1, C2, T1, T2;
-    double V11, V12, V21, V22;
+    double C1, C2, T1, T2 = 0;
+    double V11, V12, V21, V22 = 0;
     double outputDelay;
 
     for (int i = 0; i < GATE_LUT_DIM-1; i++) {
