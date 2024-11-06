@@ -18,3 +18,8 @@ contains functions nessecary for PA1, forward traversal, backward traversal, cri
 Makefile
 
 allows for easy compilation of the project, simply compile the progrram by running 'make' in the terminal. The executable will be 'sta'
+
+Link to GitHub incase the project is missing files
+https://github.com/Hymes-Git/EE5301
+
+In addition if were supposed to output the results to cout AND the ckt_traversal.txt file, the "outputCircuitTraversal" function call in main can have the 0 changed to a 1 to use cout

@@ -43,7 +43,7 @@ vector <CircuitNode*> findCriticalPath (Circuit &circuit);
  * Output the required information about the gate, which is circuit delay, gate slacks and the critical path
  * @param circuit the circuit to output information about
  */
-void outputCircuitTraversal (Circuit &circuit, vector <CircuitNode*> &criticalPath, string outputFile, bool printToTerminal);
+void outputCircuitTraversal (Circuit &circuit, vector <CircuitNode*> &criticalPath, string outputFile, bool printToTerminal, bool printToFile);
 /**
  * Converts all DFFs in a circuit to act as a simulatenous input and output
  * @param circuit Circuit to execute the function on
@@ -105,7 +105,7 @@ int main(int argc, char* argv[]) {
     runForwardTraversal(circuit);
     runBackwardTraversal(circuit);
     vector <CircuitNode*> criticalPath = findCriticalPath(circuit);
-    outputCircuitTraversal(circuit, criticalPath, "ckt_traversal.txt", 0);
+    outputCircuitTraversal(circuit, criticalPath, "ckt_traversal.txt", 1, 0);
 
     // cout << circuit.gate_db_.gate_info_lut_["AND"]->capacitance << endl;
     // cout << circuit.gate_db_.gate_info_lut_["AND"]->cell_delayindex1[6] << endl;
@@ -114,6 +114,10 @@ int main(int argc, char* argv[]) {
     // cout << calculateOutputSlew(circuit, "AND", 0.0171859, 15.1443) << endl;
     // cout << calculateDelay(circuit, "AND", 0.0171859, 15.1443) << endl;
     // cout << calculateDelay(circuit, "AND", 0.0136039, 6.80091) << endl;
+    // cout << calculateDelay(circuit, "AND", 0.0136039, 60) << endl;
+    // cout << calculateDelay(circuit, "AND", 0.0136039, 70) << endl;
+    // cout << calculateDelay(circuit, "AND", 0.136039, 70) << endl;
+    // cout << calculateOutputSlew(circuit, "AND", 0.136039, 120) << endl;
 
     return 0;
 
@@ -346,14 +350,17 @@ vector <CircuitNode*> findCriticalPath (Circuit &circuit) {
   
 }
 
-void outputCircuitTraversal (Circuit &circuit, vector <CircuitNode*> &criticalPath, string outputFile, bool printToTerminal) {
+void outputCircuitTraversal (Circuit &circuit, vector <CircuitNode*> &criticalPath, string outputFile, bool printToTerminal, bool printToFile) {
     ofstream fileOut;
-    fileOut.open(outputFile);
+    if (printToFile) { 
+        fileOut.open(outputFile);
     
-    if (!fileOut.is_open()) {
-        cout << "ERROR: Unable to open file: " << outputFile << endl;
-        return;
+        if (!fileOut.is_open()) {
+            cout << "ERROR: Unable to open file: " << outputFile << endl;
+            return;
+        }
     }
+
 
     ostringstream output;
 
@@ -386,9 +393,12 @@ void outputCircuitTraversal (Circuit &circuit, vector <CircuitNode*> &criticalPa
      cout << output.str();       
     }
 
-    fileOut << output.str();
+    if (printToFile) {
+        fileOut << output.str();
 
-    fileOut.close();
+        fileOut.close();        
+    }
+
 }
 
 void convertDFFs(Circuit &circuit) {
@@ -451,11 +461,13 @@ double calculateOutputSlew(Circuit &circuit, string gateType, double inputSlew, 
         if (inputSlew < circuit.gate_db_.gate_info_lut_[gateType]->output_slewindex1[0]) {
             T1 = circuit.gate_db_.gate_info_lut_[gateType]->output_slewindex1[0];
             T2 = circuit.gate_db_.gate_info_lut_[gateType]->output_slewindex1[1];
-            inputSlew = circuit.gate_db_.gate_info_lut_[gateType]->output_slewindex1[0];
+            slewIndex = 0;
+            //inputSlew = circuit.gate_db_.gate_info_lut_[gateType]->output_slewindex1[0];
         } else if (inputSlew > circuit.gate_db_.gate_info_lut_[gateType]->output_slewindex1[GATE_LUT_DIM-1]) {
             T1 = circuit.gate_db_.gate_info_lut_[gateType]->output_slewindex1[GATE_LUT_DIM-2];
             T2 = circuit.gate_db_.gate_info_lut_[gateType]->output_slewindex1[GATE_LUT_DIM-1];
-            inputSlew = circuit.gate_db_.gate_info_lut_[gateType]->output_slewindex1[GATE_LUT_DIM-1];
+            slewIndex = GATE_LUT_DIM - 2;
+            //inputSlew = circuit.gate_db_.gate_info_lut_[gateType]->output_slewindex1[GATE_LUT_DIM-1];
         } else {
             cout << "ERROR: Unknown Program should not get here, Input Slew: " << inputSlew << endl;
         }       
@@ -480,11 +492,13 @@ double calculateOutputSlew(Circuit &circuit, string gateType, double inputSlew, 
         if (loadCapacitance < circuit.gate_db_.gate_info_lut_[gateType]->output_slewindex2[0]) {
             C1 = circuit.gate_db_.gate_info_lut_[gateType]->output_slewindex2[0];
             C2 = circuit.gate_db_.gate_info_lut_[gateType]->output_slewindex2[1];
-            loadCapacitance = circuit.gate_db_.gate_info_lut_[gateType]->output_slewindex2[0];
+            capacitanceIndex = 0;
+            //loadCapacitance = circuit.gate_db_.gate_info_lut_[gateType]->output_slewindex2[0];
         } else if (loadCapacitance > circuit.gate_db_.gate_info_lut_[gateType]->output_slewindex2[GATE_LUT_DIM-1]) {
             C1 = circuit.gate_db_.gate_info_lut_[gateType]->output_slewindex2[GATE_LUT_DIM-2];
             C2 = circuit.gate_db_.gate_info_lut_[gateType]->output_slewindex2[GATE_LUT_DIM-1];
-            loadCapacitance = circuit.gate_db_.gate_info_lut_[gateType]->output_slewindex2[GATE_LUT_DIM-1];
+            capacitanceIndex = GATE_LUT_DIM - 2;
+            //loadCapacitance = circuit.gate_db_.gate_info_lut_[gateType]->output_slewindex2[GATE_LUT_DIM-1];
         } else {
             cout << "ERROR: Program should not get here, Load Capacitance: " << loadCapacitance << endl;
         }
@@ -498,8 +512,11 @@ double calculateOutputSlew(Circuit &circuit, string gateType, double inputSlew, 
     V21 = circuit.gate_db_.gate_info_lut_[gateType]->output_slew[slewIndex+1][capacitanceIndex];
     V22 = circuit.gate_db_.gate_info_lut_[gateType]->output_slew[slewIndex+1][capacitanceIndex+1];
 
-    if (debug)
+    if (debug) {
+        cout << "C: " << loadCapacitance << ", T: " << inputSlew << endl;
+        cout << "C1: " << C1 << ", C2: " << C2 << ", T1: " << T1 << ", T2: " << T2 << endl;
         cout << "V11: " << V11 << ", V12: " << V12<< ", V21: " << V21 << ", V22: " << V22 << endl;
+    }
 
     outputSlew = ( V11 * (C2 - loadCapacitance) * (T2 - inputSlew) 
     + V12 * (loadCapacitance - C1) * (T2 - inputSlew)
@@ -536,11 +553,13 @@ double calculateDelay(Circuit &circuit, string gateType, double inputSlew, doubl
         if (inputSlew < circuit.gate_db_.gate_info_lut_[gateType]->cell_delayindex1[0]) {
             T1 = circuit.gate_db_.gate_info_lut_[gateType]->cell_delayindex1[0];
             T2 = circuit.gate_db_.gate_info_lut_[gateType]->cell_delayindex1[1];
-            inputSlew = circuit.gate_db_.gate_info_lut_[gateType]->cell_delayindex1[0];
+            slewIndex = 0;
+            //inputSlew = circuit.gate_db_.gate_info_lut_[gateType]->cell_delayindex1[0];
         } else if (inputSlew > circuit.gate_db_.gate_info_lut_[gateType]->cell_delayindex1[GATE_LUT_DIM-1]) {
             T1 = circuit.gate_db_.gate_info_lut_[gateType]->cell_delayindex1[GATE_LUT_DIM-2];
             T2 = circuit.gate_db_.gate_info_lut_[gateType]->cell_delayindex1[GATE_LUT_DIM-1];
-            inputSlew = circuit.gate_db_.gate_info_lut_[gateType]->cell_delayindex1[GATE_LUT_DIM-1];
+            slewIndex = GATE_LUT_DIM - 2;
+            //inputSlew = circuit.gate_db_.gate_info_lut_[gateType]->cell_delayindex1[GATE_LUT_DIM-1];
         } else {
             cout << "ERROR: Unknown Program should not get here, Input Slew: " << inputSlew << endl;
         }       
@@ -565,11 +584,13 @@ double calculateDelay(Circuit &circuit, string gateType, double inputSlew, doubl
         if (loadCapacitance < circuit.gate_db_.gate_info_lut_[gateType]->cell_delayindex2[0]) {
             C1 = circuit.gate_db_.gate_info_lut_[gateType]->cell_delayindex2[0];
             C2 = circuit.gate_db_.gate_info_lut_[gateType]->cell_delayindex2[1];
-            loadCapacitance = circuit.gate_db_.gate_info_lut_[gateType]->cell_delayindex2[0];
+            capacitanceIndex = 0;
+            //loadCapacitance = circuit.gate_db_.gate_info_lut_[gateType]->cell_delayindex2[0];
         } else if (loadCapacitance > circuit.gate_db_.gate_info_lut_[gateType]->cell_delayindex2[GATE_LUT_DIM-1]) {
             C1 = circuit.gate_db_.gate_info_lut_[gateType]->cell_delayindex2[GATE_LUT_DIM-2];
             C2 = circuit.gate_db_.gate_info_lut_[gateType]->cell_delayindex2[GATE_LUT_DIM-1];
-            loadCapacitance = circuit.gate_db_.gate_info_lut_[gateType]->cell_delayindex2[GATE_LUT_DIM-1];
+            capacitanceIndex = GATE_LUT_DIM - 2;
+            //loadCapacitance = circuit.gate_db_.gate_info_lut_[gateType]->cell_delayindex2[GATE_LUT_DIM-1];
         } else {
             cout << "ERROR: Program should not get here, Load Capacitance: " << loadCapacitance << endl;
             cout << "Bounds: (" << circuit.gate_db_.gate_info_lut_[gateType]->cell_delayindex2[0] << ", " << circuit.gate_db_.gate_info_lut_[gateType]->cell_delayindex2[GATE_LUT_DIM-1] << ")" << endl; 
