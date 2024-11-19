@@ -18,6 +18,8 @@ int main(int argc, char* argv[]) {
     }
 
     if (debug)
-        cout << "Running with files: "
+        cout << "Running with files: " << fileName << endl;
+
+    return 0;
 
 }
