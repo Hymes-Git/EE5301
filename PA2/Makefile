@@ -1,16 +1,38 @@
-#CFLAGS=-O3
-CFLAGS=-g
+CC=g++
+SRC_DIR=src
+BUID_DIR=build
+TARGET=placer
 
-all: suraj_parser.o main.o
-	g++ $(CFLAGS) -o suraj_parser suraj_parser.o main.o
+SOURCES=$(shell find $(SRC_DIR) -type f -name *.cpp)
+OBJECTS=$(patsubst $(SRC_DIR)/%,$(BUID_DIR)/%,$(SOURCES:.cpp=.o))
 
-suraj_parser.o: suraj_parser.cpp
-	g++ $(CFLAGS) -c suraj_parser.cpp
+#CFLAGS=-Wall -std=c++11 -O3
+CFLAGS=-Wall -std=c++11 -g
 
-main.o: main.cpp suraj_parser.h
-	g++ $(CFLAGS) -c main.cpp
+INC=-I include
 
-clean: 
-	del *.o suraj_parser.exe
+$(TARGET): $(OBJECTS)
+	@echo "------------------------"
+	@echo "Linking"
+	@echo "------------------------"
+	
+	$(CC) $^ -o $(TARGET)
 
+	@echo "Done."
+	@echo "Executable = $(TARGET)"
+
+$(BUID_DIR)/%.o: $(SRC_DIR)/%.cpp
+	@echo "------------------------"
+	@echo "Building"
+	@echo "------------------------"
+
+	@mkdir -p $(BUID_DIR)
+	
+	$(CC) $(CFLAGS) $(INC) -c -o $@ $<
+
+clean:
+	@echo "Cleaning"
+	$(RM) -rf $(BUID_DIR) $(TARGET_DIR)
+
+.PHONY: clean
 
