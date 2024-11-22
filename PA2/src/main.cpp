@@ -12,6 +12,7 @@
 
 using namespace std;
 
+
 	
 int main(int argv, char *argc[])
 {
@@ -40,14 +41,18 @@ int main(int argv, char *argc[])
 	}
 
 	printf("\nNumber of vertices,hyper = %d %d\n",numCellsAndPads,numhyper);
-	
-
-	
+		
 	// call function(s) dealing with creating the Q matrix, placement, etc.
 
+	vector <vector <int>> qMatrix;
+	qMatrix.resize(numCells_noPads);
+	
+	for (int i = 0; i < numCells_noPads; i++) {
+		qMatrix[i].resize(numCells_noPads);
+	}
 
-	
-	
+
+
     free(pinLocations);
 	free(hEdge_idxToFirstEntryInPinArray);
 	free(cellPinArray);
