@@ -12,8 +12,11 @@
 
 using namespace std;
 
-
+int circuitWidth, circuitHeight = 0;
 	
+int findNumStars(vector <int> hyperEdgeIndexes);
+void initDVectors (vector <double> &dXVector , vector<double> &dYVector, vector <SPinLocation> &pinLocations);
+
 int main(int argv, char *argc[])
 {
 	char inareFileName[100];
@@ -27,7 +30,7 @@ int main(int argv, char *argc[])
         	     
     cout << "Reading circuit file " << argc[1] << endl;
 
-	strcpy (inareFileName, argc[1]);
+	strcpy(inareFileName, argc[1]);
 	strcat(inareFileName, ".are");
 	strcpy(innetFileName,argc[1]);
 	strcat(innetFileName,".net");
@@ -41,15 +44,66 @@ int main(int argv, char *argc[])
 	}
 
 	printf("\nNumber of vertices,hyper = %d %d\n",numCellsAndPads,numhyper);
-		
+
+	// transfer data over
+	int numCellPinsLocal = numCellPins; // number of all terminals connected to the end points of (hyper) edges
+	int numHyperLocal = numhyper; // number of edges and hyperedges
+	int numCellsAndPadsLocal = numCellsAndPads; // total number of movable cells (generall with names starting with a), and I/O pads (generally starting with p)
+	int numCellsAndNoPadsLocal = numCells_noPads; // total number of movable cells
+	int numPins = numCellsAndPadsLocal - numCellsAndNoPadsLocal; // total number of I/O pads or pins
+
+	map <const char *, int, ltstr> nodeNameToNodeNumMapLocal = nodeNameToNodeNum_map;
+	vector <int> cellPinArrayLocal;
+	vector <int> hyperEdgeIndexToFirstEntryInPinArrayLocal;
+	vector <int> hyperWeightsLocal;
+	vector <int> vertexSizeLocal;
+	vector <SPinLocation> pinLocationsLocal;
+
+	cellPinArrayLocal.resize(numCellPinsLocal);
+	hyperEdgeIndexToFirstEntryInPinArrayLocal.resize(numHyperLocal+1);
+	hyperWeightsLocal.resize(numHyperLocal);
+	vertexSizeLocal.resize(numCellsAndPadsLocal);
+	pinLocationsLocal.resize(numPins);
+
+	for (int i = 0; i < numCellPinsLocal; i++) {
+		cellPinArrayLocal[i] = cellPinArray[i]; 
+	}
+
+	for (int i = 0; i < numHyperLocal+1; i++) {
+		hyperEdgeIndexToFirstEntryInPinArrayLocal[i] = hEdge_idxToFirstEntryInPinArray[i];
+	}
+
+	for (int i = 0; i < numHyperLocal; i++) {
+		hyperWeightsLocal[i] = hyperwts[i];
+	}
+
+	for (int i = 0; i < numCellsAndPads; i++) {
+		vertexSizeLocal[i] = vertexSize[i];
+	}
+
+	for (int i = 0; i < numPins; i++) {
+		pinLocationsLocal[i] = pinLocations[i];
+	}
+
 	// call function(s) dealing with creating the Q matrix, placement, etc.
 
-	vector <vector <int>> qMatrix;
-	qMatrix.resize(numCells_noPads);
+	// find number of stars
+	int numStars = findNumStars(hyperEdgeIndexToFirstEntryInPinArrayLocal);
+	cout << "Num Stars: " << numStars << endl;
+
+
+	vector <vector <double>> qMatrix;
+	vector <double> dXVector;
+	vector <double> dYVector; 
+	qMatrix.resize(numCellsAndNoPadsLocal + numStars);
+	dXVector.resize(numCellsAndNoPadsLocal + numStars);
+	dYVector.resize(numCellsAndNoPadsLocal + numStars);
 	
-	for (int i = 0; i < numCells_noPads; i++) {
-		qMatrix[i].resize(numCells_noPads);
+	for (int i = 0; i < numCellsAndNoPadsLocal + numStars; i++) {
+		qMatrix[i].resize(numCellsAndNoPadsLocal + numStars);
 	}
+
+	initDVectors(dXVector, dYVector, pinLocationsLocal);
 
 
 
@@ -57,4 +111,38 @@ int main(int argv, char *argc[])
 	free(hEdge_idxToFirstEntryInPinArray);
 	free(cellPinArray);
 	free(hyperwts);
+}
+
+int findNumStars(vector <int> hyperEdgeIndexes) {
+	int numStars = 0;
+	int lastEdgeIndex = 0;
+	int currentEdgeIndex = 0;
+	for (unsigned int index = 0; index < hyperEdgeIndexes.size(); index++) {
+		currentEdgeIndex = hyperEdgeIndexes[index];
+		if (currentEdgeIndex - lastEdgeIndex > 3) {
+			numStars += 1;
+		}
+		lastEdgeIndex = currentEdgeIndex;
+	}
+
+	return numStars;
+}
+
+void initDVectors (vector <double> &dXVector , vector<double> &dYVector, vector <SPinLocation> &pinLocations) {
+
+	for (unsigned int pinNum = 0; pinNum < pinLocations.size(); pinNum++) {
+		if (pinLocations[pinNum].x > circuitWidth) {
+			circuitWidth = pinLocations[pinNum].x;
+		}
+
+		if (pinLocations[pinNum].y > circuitHeight) {
+			circuitHeight = pinLocations[pinNum].y;
+		}
+	}
+
+	for (unsigned int cellNum = 0; cellNum < dXVector.size(); cellNum++) {
+		dXVector[cellNum] = circuitWidth / 2.0;
+		dYVector[cellNum] = circuitHeight / 2.0;
+	}
+
 }
