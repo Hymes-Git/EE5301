@@ -82,7 +82,7 @@ int parseIbmFile(char *inareFileName, char *innetFileName, char *inPadLocationFi
 	
 
 	fscanf(innetFile,"%*d %d %d %d %d\n",&numCellPins,&numhyper,&numCellsAndPads,&numCells_noPads);
-
+	numCells_noPads++;
 	cout << "numCellPins, numhyper, numCellsAndPads, numCells_noPads = " << numCellPins << ", " << numhyper << ", " << numCellsAndPads << ", " << numCells_noPads << endl;
 	// numCellPins is the total number of end-points (pins) for hyperedges and edges.
 	// numhyper is the total number of hyperedges + edges
@@ -135,7 +135,7 @@ int parseIbmFile(char *inareFileName, char *innetFileName, char *inPadLocationFi
 		}
 		else
 		{
-			sscanf(line,"%s %d",nodedesc,hyperweight);
+			sscanf(line,"%s %d",nodedesc,&hyperweight);
 		}
 		cellPinArray[pinCount] = nodeNameToNodeNum_map[nodedesc]; 
 		++pinCount;
