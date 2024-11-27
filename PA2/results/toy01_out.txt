@@ -1,0 +1,5 @@
+Reading circuit file tests/toy01/toy01
+numCellPins, numhyper, numCellsAndPads, numCells_noPads = 15, 6, 6, 3
+
+Number of vertices,hyper = 6 6
+Num Stars: 1

@@ -1,0 +1,5 @@
+Reading circuit file tests/ibm03/ibm03
+numCellPins, numhyper, numCellsAndPads, numCells_noPads = 93573, 27401, 23136, 22853
+
+Number of vertices,hyper = 23136 27401
+Num Stars: 6698
