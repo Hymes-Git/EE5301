@@ -237,14 +237,14 @@ void populateDXYVectorsForEdge (vector <double> &dXVector, vector <double> &dYVe
 		// edge1 is pin, edge2 is cell
 		if (edge2 >= numCellsAndPins) // edge 2 is star node, get it back in index
 			edge2 -= numPins;
-		dXVector[edge2] -= hyperEdgeWeights[currEdge] * calculateGamma(edgeSize) * pinLocations[edge1 - numPins].x;
-		dYVector[edge2] -= hyperEdgeWeights[currEdge] * calculateGamma(edgeSize) * pinLocations[edge1 - numPins].y;
+		dXVector[edge2] -= hyperEdgeWeights[currEdge] * calculateGamma(edgeSize) * pinLocations[edge1 - numMovableCells].x;
+		dYVector[edge2] -= hyperEdgeWeights[currEdge] * calculateGamma(edgeSize) * pinLocations[edge1 - numMovableCells].y;
 	} else if (edge2 >= numMovableCells && edge2 < numCellsAndPins) {
 		// edge1 is cell, edge2 is pin
 		if (edge1 >= numCellsAndPins) // edge1 is star node, get it back in index
 			edge1 -= numPins;
-		dXVector[edge1] -= hyperEdgeWeights[currEdge] * calculateGamma(edgeSize) * pinLocations[edge2 - numPins].x;
-		dYVector[edge1] -= hyperEdgeWeights[currEdge] * calculateGamma(edgeSize) * pinLocations[edge2 - numPins].y;
+		dXVector[edge1] -= hyperEdgeWeights[currEdge] * calculateGamma(edgeSize) * pinLocations[edge2 - numMovableCells].x;
+		dYVector[edge1] -= hyperEdgeWeights[currEdge] * calculateGamma(edgeSize) * pinLocations[edge2 - numMovableCells].y;
 	} else {
 		// edge between 2 cells, nothing to do
 	}	
