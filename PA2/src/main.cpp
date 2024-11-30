@@ -26,7 +26,7 @@ double findNetCost(double weight, double xi, double xj, double yi, double yj);
 int findNumStars(vector <int> &hyperEdgeStartIndexes);
 void initXYVectors (vector <double> &XVector , vector<double> &YVector, vector <SPinLocation> &pinLocations);
 double calculateWireLength (vector <vector <double>> &qMatrix, vector <double> &XVector , vector<double> &YVector);
-void writeFinalPositions(string fileName, vector <double> &XVector, vector <double> &YVector, int numCells);
+void writeFinalPositions(string fileName, vector <double> &XVector, vector <double> &YVector, vector <SPinLocation> &pinLocations, int numCells);
 
 int main(int argv, char *argc[])
 {
@@ -123,7 +123,7 @@ int main(int argv, char *argc[])
 	initXYVectors(XVector, YVector, pinLocationsLocal);
 
 	cout << "Wirelength: " << calculateWireLength(qMatrix, XVector, YVector);
-	writeFinalPositions("positions.csv", XVector, YVector, numCellsAndNoPadsLocal);
+	writeFinalPositions("positions.csv", XVector, YVector, pinLocationsLocal, numCellsAndNoPadsLocal);
 
     free(pinLocations);
 	free(hEdge_idxToFirstEntryInPinArray);
@@ -384,11 +384,12 @@ double calculateWireLength (vector <vector <double>> &qMatrix, vector <double> &
 
 }
 
-void writeFinalPositions(string fileName, vector <double> &XVector, vector <double> &YVector, int numCells) {
+void writeFinalPositions(string fileName, vector <double> &XVector, vector <double> &YVector, vector <SPinLocation> &pinLocations, int numCells) {
 
 	ofstream fileOut;
 
 	int numEntries = XVector.size();
+	int numPins = pinLocations.size();
 
 	fileOut.open(fileName);
     
@@ -399,15 +400,21 @@ void writeFinalPositions(string fileName, vector <double> &XVector, vector <doub
 
 	ostringstream output;
 
+	output << "type, x coordinate, y coordinate" << endl;
+
 	for (int entry = 0; entry < numEntries; entry++) {
 
 		if (entry < numCells) {
-			output << "Cell a" << entry << ": " << XVector[entry] << ", " << YVector[entry] << endl;
+			output << "a, " << XVector[entry] << ", " << YVector[entry] << endl;
 		} else {
 			// is a star node 
-			output << "Star a" << entry << ": " << XVector[entry] << ", " << YVector[entry] << endl;
+			output << "s, " << XVector[entry] << ", " << YVector[entry] << endl;
 		}
 
+	}
+
+	for (int entry = 0; entry < numPins; entry++) {
+		output << "p, " << pinLocations[entry].x << ", " << pinLocations[entry].y << endl;
 	}
 
 	fileOut << output.str();

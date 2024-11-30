@@ -1,4 +1,8 @@
-Cell a0: 2.5, 2.5
-Cell a1: 2.5, 2.5
-Cell a2: 2.5, 2.5
-Star a3: 2.5, 2.5
+type, x coordinate, y coordinate
+a, 2.5, 2.5
+a, 2.5, 2.5
+a, 2.5, 2.5
+s, 2.5, 2.5
+p, 0, 5
+p, 5, 5
+p, 2, 0
