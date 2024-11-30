@@ -23,6 +23,7 @@ void initDXYVectors(vector <double> &dXVector, vector <double> &dYVector, vector
 double findNetCost(double weight, double xi, double xj, double yi, double yj);
 int findNumStars(vector <int> &hyperEdgeStartIndexes);
 void initXYVectors (vector <double> &XVector , vector<double> &YVector, vector <SPinLocation> &pinLocations);
+double calculateWireLength (vector <vector <double>> &qMatrix, vector <double> &XVector , vector<double> &YVector);
 
 int main(int argv, char *argc[])
 {
@@ -117,6 +118,8 @@ int main(int argv, char *argc[])
 	initQMatrix (qMatrix, cellPinArrayLocal, hyperEdgeIndexToFirstEntryInPinArrayLocal, hyperWeightsLocal, numCellsAndNoPadsLocal, numCellsAndPadsLocal);
 	initDXYVectors (dXVector, dYVector, pinLocationsLocal, cellPinArrayLocal, hyperEdgeIndexToFirstEntryInPinArrayLocal, hyperWeightsLocal, numCellsAndNoPadsLocal, numCellsAndPadsLocal);
 	initXYVectors(XVector, YVector, pinLocationsLocal);
+
+	cout << "Wirelength: " << calculateWireLength(qMatrix, XVector, YVector);
 
     free(pinLocations);
 	free(hEdge_idxToFirstEntryInPinArray);
@@ -355,4 +358,28 @@ void initXYVectors (vector <double> &XVector , vector<double> &YVector, vector <
 		YVector[cellNum] = circuitHeight / 2.0;
 	}
 
+}
+
+double calculateWireLength (vector <vector <double>> &qMatrix, vector <double> &XVector , vector<double> &YVector) {
+	double sum = 0;
+	int numNodes = qMatrix.size();
+	for (int row = 0; row < numNodes; row++) {
+		for (int column = 0; column < numNodes; column++) {
+
+			double entry = qMatrix[row][column];
+
+			if (entry < 0) {
+				sum += -1 * entry * ( pow((XVector[row] - XVector[column]), 2.0) + pow((YVector[row] - YVector[column]), 2.0) );
+			}
+
+		}
+	}
+
+	sum = sqrt(sum);
+	return sum;
+
+}
+
+void writeFinalPositions(string fileName, vector <double> &XVector, vector <double> &YVector) {
+	
 }

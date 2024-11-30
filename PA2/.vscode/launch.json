@@ -9,7 +9,7 @@
             "type": "cppdbg",
             "request": "launch",
             "program": "${workspaceFolder}/placer",
-            "args": ["${workspaceFolder}/tests/toy01/toy01"],
+            "args": ["${workspaceFolder}/tests/toy02/toy02"],
             "stopAtEntry": false,
             "cwd": "${fileDirname}",
             "environment": [],
