@@ -4,6 +4,8 @@
 
 
 #include <iostream>
+#include <fstream>
+#include <sstream>
 #include <stdio.h>
 #include <map>
 #include <vector>
@@ -24,6 +26,7 @@ double findNetCost(double weight, double xi, double xj, double yi, double yj);
 int findNumStars(vector <int> &hyperEdgeStartIndexes);
 void initXYVectors (vector <double> &XVector , vector<double> &YVector, vector <SPinLocation> &pinLocations);
 double calculateWireLength (vector <vector <double>> &qMatrix, vector <double> &XVector , vector<double> &YVector);
+void writeFinalPositions(string fileName, vector <double> &XVector, vector <double> &YVector, int numCells);
 
 int main(int argv, char *argc[])
 {
@@ -120,6 +123,7 @@ int main(int argv, char *argc[])
 	initXYVectors(XVector, YVector, pinLocationsLocal);
 
 	cout << "Wirelength: " << calculateWireLength(qMatrix, XVector, YVector);
+	writeFinalPositions("positions.csv", XVector, YVector, numCellsAndNoPadsLocal);
 
     free(pinLocations);
 	free(hEdge_idxToFirstEntryInPinArray);
@@ -380,6 +384,33 @@ double calculateWireLength (vector <vector <double>> &qMatrix, vector <double> &
 
 }
 
-void writeFinalPositions(string fileName, vector <double> &XVector, vector <double> &YVector) {
-	
+void writeFinalPositions(string fileName, vector <double> &XVector, vector <double> &YVector, int numCells) {
+
+	ofstream fileOut;
+
+	int numEntries = XVector.size();
+
+	fileOut.open(fileName);
+    
+    if (!fileOut.is_open()) {
+        cout << "ERROR: Unable to open file: " << fileName << endl;
+        return;
+	}
+
+	ostringstream output;
+
+	for (int entry = 0; entry < numEntries; entry++) {
+
+		if (entry < numCells) {
+			output << "Cell a" << entry << ": " << XVector[entry] << ", " << YVector[entry] << endl;
+		} else {
+			// is a star node 
+			output << "Star a" << entry << ": " << XVector[entry] << ", " << YVector[entry] << endl;
+		}
+
+	}
+
+	fileOut << output.str();
+	fileOut.close();
+
 }
