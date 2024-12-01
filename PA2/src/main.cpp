@@ -12,6 +12,7 @@
 #include <cmath>
 #include <string.h>
 #include "suraj_parser.h"
+#include "gpt_matrixsolver.h"
 
 using namespace std;
 
@@ -121,6 +122,9 @@ int main(int argv, char *argc[])
 	initQMatrix (qMatrix, cellPinArrayLocal, hyperEdgeIndexToFirstEntryInPinArrayLocal, hyperWeightsLocal, numCellsAndNoPadsLocal, numCellsAndPadsLocal);
 	initDXYVectors (dXVector, dYVector, pinLocationsLocal, cellPinArrayLocal, hyperEdgeIndexToFirstEntryInPinArrayLocal, hyperWeightsLocal, numCellsAndNoPadsLocal, numCellsAndPadsLocal);
 	initXYVectors(XVector, YVector, pinLocationsLocal);
+
+	XVector = computePositions(qMatrix, dXVector);
+	YVector = computePositions(qMatrix, dYVector);
 
 	cout << "Wirelength: " << calculateWireLength(qMatrix, XVector, YVector);
 	writeFinalPositions("positions.csv", XVector, YVector, pinLocationsLocal, numCellsAndNoPadsLocal);
