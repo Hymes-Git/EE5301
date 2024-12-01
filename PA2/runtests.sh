@@ -15,6 +15,11 @@ run_test() {
 
     time $PRG_NAME  "$circuit_file" | tee "$output_file"
 
+    # Append contents of ckt_traversal.txt to the output file
+    if [[ -f ./positions.csv ]]; then
+        cat ./positions.csv >> "$output_file"
+    fi
+
 }
 
 run_test "toy01" "${TEST_CKT_PATH}/toy01/toy01"

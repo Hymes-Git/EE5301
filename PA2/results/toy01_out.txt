@@ -3,3 +3,13 @@ numCellPins, numhyper, numCellsAndPads, numCells_noPads = 15, 6, 6, 3
 
 Number of vertices,hyper = 6 6
 Num Stars: 1
+Wirelength: 0
+
+type, x coordinate, y coordinate
+a, 2.5, 2.5
+a, 2.5, 2.5
+a, 2.5, 2.5
+s, 2.5, 2.5
+p, 0, 5
+p, 5, 5
+p, 2, 0

@@ -62,20 +62,17 @@ std::vector<double> multiply(const std::vector<std::vector<double>>& matrix, con
     return result;
 }
 
-std::vector <double> computePositions(vector <vector <double>> qMatrix, vector <double> dx) {
+// Function to solve the equation Q * x + dx = 0
+std::vector<double> solveMatrixEquation(const std::vector<std::vector<double>>& Q, std::vector<double>& dx) {
     // Compute the inverse of Q
-    std::vector<std::vector<double>> Q_inv = inverse(qMatrix);
+    std::vector<std::vector<double>> Q_inv = inverse(Q);
 
     // Multiply Q_inv by -dx
     for(auto & val : dx) {
         val = -val;
     }
 
-    std::vector<double> x;
-    x.resize(dx.size());
-    x = multiply(Q_inv, dx);
-
-    return x;
+    return multiply(Q_inv, dx);
 }
 
 // int main() {
@@ -87,15 +84,8 @@ std::vector <double> computePositions(vector <vector <double>> qMatrix, vector <
 
 //     std::vector<double> dx = {5, -3};
 
-//     // Compute the inverse of Q
-//     std::vector<std::vector<double>> Q_inv = inverse(Q);
-
-//     // Multiply Q_inv by -dx
-//     for(auto & val : dx) {
-//         val = -val;
-//     }
-
-//     std::vector<double> x = multiply(Q_inv, dx);
+//     // Solve the matrix equation
+//     std::vector<double> x = solveMatrixEquation(Q, dx);
 
 //     // Output the result
 //     std::cout << "Solution x: ";
@@ -106,3 +96,4 @@ std::vector <double> computePositions(vector <vector <double>> qMatrix, vector <
 
 //     return 0;
 // }
+

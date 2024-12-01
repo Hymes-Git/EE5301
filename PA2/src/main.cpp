@@ -97,13 +97,18 @@ int main(int argv, char *argc[])
 		pinLocationsLocal[i] = pinLocations[i];
 	}
 
+    free(pinLocations);
+	free(hEdge_idxToFirstEntryInPinArray);
+	free(cellPinArray);
+	free(hyperwts);
+
 	// call function(s) dealing with creating the Q matrix, placement, etc.
 
 	// find number of stars
 	int numStars = findNumStars(hyperEdgeIndexToFirstEntryInPinArrayLocal);
 	cout << "Num Stars: " << numStars << endl;
 
-
+	// create vectors and resize them
 	vector <vector <double>> qMatrix;
 	vector <double> dXVector;
 	vector <double> dYVector; 
@@ -119,20 +124,17 @@ int main(int argv, char *argc[])
 		qMatrix[i].resize(numCellsAndNoPadsLocal + numStars);
 	}
 
+	// initialize q matrix and vectors
 	initQMatrix (qMatrix, cellPinArrayLocal, hyperEdgeIndexToFirstEntryInPinArrayLocal, hyperWeightsLocal, numCellsAndNoPadsLocal, numCellsAndPadsLocal);
 	initDXYVectors (dXVector, dYVector, pinLocationsLocal, cellPinArrayLocal, hyperEdgeIndexToFirstEntryInPinArrayLocal, hyperWeightsLocal, numCellsAndNoPadsLocal, numCellsAndPadsLocal);
 	initXYVectors(XVector, YVector, pinLocationsLocal);
 
-	XVector = computePositions(qMatrix, dXVector);
-	YVector = computePositions(qMatrix, dYVector);
+	//XVector = solveMatrixEquation(qMatrix, dXVector);
+	//YVector = solveMatrixEquation(qMatrix, dYVector);
 
-	cout << "Wirelength: " << calculateWireLength(qMatrix, XVector, YVector);
+	cout << "Wirelength: " << calculateWireLength(qMatrix, XVector, YVector) << endl << endl;
 	writeFinalPositions("positions.csv", XVector, YVector, pinLocationsLocal, numCellsAndNoPadsLocal);
 
-    free(pinLocations);
-	free(hEdge_idxToFirstEntryInPinArray);
-	free(cellPinArray);
-	free(hyperwts);
 }
 
 double calculateGamma(int numEdges) {

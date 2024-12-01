@@ -11,7 +11,7 @@ using namespace std;
 
 std::vector<std::vector<double>> inverse(const std::vector<std::vector<double>>& matrix);
 std::vector<double> multiply(const std::vector<std::vector<double>>& matrix, const std::vector<double>& vector);
-std::vector <double> computePositions(vector <vector <double>> qMatrix, vector <double> dx);
+std::vector<double> solveMatrixEquation(const std::vector<std::vector<double>>& Q, std::vector<double>& dx);
 
 
 #endif 
