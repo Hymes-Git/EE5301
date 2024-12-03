@@ -205,7 +205,7 @@ int findNumStars(vector <int> &hyperEdgeStartIndexes) {
 	return numStars;
 }
 
-void initXYVectors (vector <double> &XVector , vector<double> &YVector, vector <SPinLocation> &pinLocations, int circuitWidth, int circuitHeight) {
+void initXYVectors (vector <double> &XVector , vector<double> &YVector, vector <SPinLocation> &pinLocations, int &circuitWidth, int &circuitHeight) {
 
 	for (unsigned int pinNum = 0; pinNum < pinLocations.size(); pinNum++) {
 		if (pinLocations[pinNum].x > circuitWidth) {
