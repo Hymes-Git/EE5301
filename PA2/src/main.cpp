@@ -1,8 +1,3 @@
-// written by Suraj Dalvi, ECE Dept., Univ. of Minnesota
-// Heavily modified by Kia Bazargan (renaming variables, adding
-// comments, creating a clean version of the hyperedge data structure)
-
-
 #include <iostream>
 #include <fstream>
 #include <sstream>
@@ -14,6 +9,7 @@
 #include "suraj_parser.h"
 #include "gpt_matrixsolver.h"
 #include "QDXDYInitializer.h"
+#include "cellSpreader.h"
 
 using namespace std;
 
@@ -107,11 +103,15 @@ int main(int argv, char *argc[])
 	vector <double> dYVector; 
 	vector <double> XVector;
 	vector <double> YVector;
+	vector <double> XSpreadedVector;
+	vector <double> YSpreadedVector;
 	qMatrix.resize(numCellsAndNoPadsLocal + numStars);
 	dXVector.resize(numCellsAndNoPadsLocal + numStars);
 	dYVector.resize(numCellsAndNoPadsLocal + numStars);
 	XVector.resize(numCellsAndNoPadsLocal + numStars);
 	YVector.resize(numCellsAndNoPadsLocal + numStars);
+	XSpreadedVector.resize(numCellsAndNoPadsLocal + numStars);
+	YSpreadedVector.resize(numCellsAndNoPadsLocal + numStars);
 	
 	for (int i = 0; i < numCellsAndNoPadsLocal + numStars; i++) {
 		qMatrix[i].resize(numCellsAndNoPadsLocal + numStars);
@@ -125,9 +125,14 @@ int main(int argv, char *argc[])
 	XVector = conjugateGradient(qMatrix, dXVector);
 	YVector = conjugateGradient(qMatrix, dYVector);
 
-	cout << "Wirelength: " << calculateWireLength(qMatrix, XVector, YVector) << endl << endl;
-	writeFinalPositions("positions.csv", XVector, YVector, pinLocationsLocal, numCellsAndNoPadsLocal);
+	cout << "Pre-spreading Wirelength: " << calculateWireLength(qMatrix, XVector, YVector) << endl;
+	writeFinalPositions("positions_prespread.csv", XVector, YVector, pinLocationsLocal, numCellsAndNoPadsLocal);
 
+	XSpreadCells(XSpreadedVector, XVector, YVector, circuitWidth, circuitHeight, 5);
+	YSpreadCells(YSpreadedVector, XVector, YVector, circuitWidth, circuitHeight, 5);
+
+	cout << "Post-spreading Wirelength: " << calculateWireLength(qMatrix, XSpreadedVector, YSpreadedVector) << endl << endl;
+	writeFinalPositions("positions_postspread.csv", XSpreadedVector, YSpreadedVector, pinLocationsLocal, numCellsAndNoPadsLocal);
 }
 
 double calculateWireLength (vector <vector <double>> &qMatrix, vector <double> &XVector , vector<double> &YVector) {
