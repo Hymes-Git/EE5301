@@ -1,91 +1,95 @@
 #include <iostream>
 #include <vector>
 #include <cmath>
-#include <stdexcept>
-
-using namespace std;
-
-// Function to compute the inverse of a matrix
-std::vector<std::vector<double>> inverse(const std::vector<std::vector<double>>& matrix) {
-    int n = matrix.size();
-    std::vector<std::vector<double>> augmented(matrix);
-
-    // Create an augmented matrix with the identity matrix
-    for (int i = 0; i < n; ++i) {
-        augmented[i].resize(2 * n);
-        augmented[i][n + i] = 1;
-    }
-
-    // Perform Gauss-Jordan elimination
-    for (int i = 0; i < n; ++i) {
-        // Find the pivot element
-        double pivot = augmented[i][i];
-        if (fabs(pivot) < 1e-10) {
-            throw std::runtime_error("Matrix is singular and cannot be inverted.");
-        }
-
-        // Normalize the pivot row
-        for (int j = 0; j < 2 * n; ++j) {
-            augmented[i][j] /= pivot;
-        }
-
-        // Eliminate the pivot column in other rows
-        for (int k = 0; k < n; ++k) {
-            if (k != i) {
-                double factor = augmented[k][i];
-                for (int j = 0; j < 2 * n; ++j) {
-                    augmented[k][j] -= factor * augmented[i][j];
-                }
-            }
-        }
-    }
-
-    // Extract the inverse matrix from the augmented matrix
-    std::vector<std::vector<double>> inverse(n, std::vector<double>(n));
-    for (int i = 0; i < n; ++i) {
-        for (int j = 0; j < n; ++j) {
-            inverse[i][j] = augmented[i][n + j];
-        }
-    }
-
-    return inverse;
-}
 
 // Function to perform matrix-vector multiplication
-std::vector<double> multiply(const std::vector<std::vector<double>>& matrix, const std::vector<double>& vector) {
-    std::vector<double> result(vector.size(), 0);
-    for (size_t i = 0; i < matrix.size(); ++i) {
-        for (size_t j = 0; j < vector.size(); ++j) {
-            result[i] += matrix[i][j] * vector[j];
+std::vector<double> matVecMul(const std::vector<std::vector<double>>& matrix, const std::vector<double>& vec) {
+    int n = vec.size();
+    std::vector<double> result(n, 0.0);
+    for (int i = 0; i < n; ++i) {
+        for (int j = 0; j < n; ++j) {
+            result[i] += matrix[i][j] * vec[j];
         }
     }
     return result;
 }
 
-// Function to solve the equation Q * x + dx = 0
-std::vector<double> solveMatrixEquation(const std::vector<std::vector<double>>& Q, std::vector<double>& dx) {
-    // Compute the inverse of Q
-    std::vector<std::vector<double>> Q_inv = inverse(Q);
+// Function to compute the dot product of two vectors
+double dotProduct(const std::vector<double>& vec1, const std::vector<double>& vec2) {
+    double result = 0.0;
+    for (size_t i = 0; i < vec1.size(); ++i) {
+        result += vec1[i] * vec2[i];
+    }
+    return result;
+}
 
-    // Multiply Q_inv by -dx
-    for(auto & val : dx) {
-        val = -val;
+// Function to add two vectors
+std::vector<double> vecAdd(const std::vector<double>& vec1, const std::vector<double>& vec2) {
+    int n = vec1.size();
+    std::vector<double> result(n);
+    for (int i = 0; i < n; ++i) {
+        result[i] = vec1[i] + vec2[i];
+    }
+    return result;
+}
+
+// Function to subtract two vectors
+std::vector<double> vecSub(const std::vector<double>& vec1, const std::vector<double>& vec2) {
+    int n = vec1.size();
+    std::vector<double> result(n);
+    for (int i = 0; i < n; ++i) {
+        result[i] = vec1[i] - vec2[i];
+    }
+    return result;
+}
+
+// Function to scale a vector by a scalar
+std::vector<double> vecScale(const std::vector<double>& vec, double scalar) {
+    int n = vec.size();
+    std::vector<double> result(n);
+    for (int i = 0; i < n; ++i) {
+        result[i] = vec[i] * scalar;
+    }
+    return result;
+}
+
+// Conjugate Gradient method to solve Q * x + dx = 0
+std::vector<double> conjugateGradient(const std::vector<std::vector<double>>& Q, const std::vector<double>& dx, double tol = 1e-10, int maxIter = 1000) {
+    int n = dx.size();
+    std::vector<double> x(n, 0.0);
+    std::vector<double> r = vecScale(dx, -1.0);
+    std::vector<double> p = r;
+    double rsold = dotProduct(r, r);
+
+    for (int i = 0; i < maxIter; ++i) {
+        std::vector<double> Qp = matVecMul(Q, p);
+        double alpha = rsold / dotProduct(p, Qp);
+        x = vecAdd(x, vecScale(p, alpha));
+        r = vecSub(r, vecScale(Qp, alpha));
+        double rsnew = dotProduct(r, r);
+
+        if (sqrt(rsnew) < tol) {
+            break;
+        }
+
+        p = vecAdd(r, vecScale(p, rsnew / rsold));
+        rsold = rsnew;
     }
 
-    return multiply(Q_inv, dx);
+    return x;
 }
 
 // int main() {
 //     // Example input
 //     std::vector<std::vector<double>> Q = {
-//         {4, 7},
-//         {2, 6}
+//         {4, 1},
+//         {1, 3}
 //     };
 
-//     std::vector<double> dx = {5, -3};
+//     std::vector<double> dx = {1, 2};
 
-//     // Solve the matrix equation
-//     std::vector<double> x = solveMatrixEquation(Q, dx);
+//     // Solve the matrix equation using the Conjugate Gradient method
+//     std::vector<double> x = conjugateGradient(Q, dx);
 
 //     // Output the result
 //     std::cout << "Solution x: ";
@@ -96,4 +100,3 @@ std::vector<double> solveMatrixEquation(const std::vector<std::vector<double>>& 
 
 //     return 0;
 // }
-

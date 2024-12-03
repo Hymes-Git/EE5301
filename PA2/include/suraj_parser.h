@@ -5,6 +5,7 @@
 #ifndef __SURAJ_PARSER__H
 #define __SURAJ_PARSER__H
 #include<map>
+#include <cstring>
 
 using namespace std;
 
