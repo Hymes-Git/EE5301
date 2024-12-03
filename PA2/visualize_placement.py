@@ -1,5 +1,11 @@
 import matplotlib.pyplot as plt
 import pandas as pd
+import sys
+
+if len(sys.argv) > 1:
+    circuitName = sys.argv[1]
+else:
+    circuitName = ""
 
 # WRITTEN EXCLUSIVELY USING MICROSOFT COPILOT
 
@@ -43,7 +49,9 @@ plt.ylabel('Y Coordinate')
 plt.title('Cell and Pin Locations')
 
 # Save the plot as a PNG file
-plt.savefig('cell_and_pin_locations.png')
+
+circuitName = "cell_and_pin_locations_" + circuitName + ".png"
+plt.savefig(circuitName)
 
 # Show the plot (optional)
 plt.show()
