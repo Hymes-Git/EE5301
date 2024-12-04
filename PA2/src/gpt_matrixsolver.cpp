@@ -2,6 +2,15 @@
 #include <vector>
 #include <cmath>
 
+// PROGRAM WRITTEN USING COPILOT
+
+// prompt:
+//in c++ write code that solves the following matrix calculation: 
+//Q * x + dx = 0 Q is a n x n matrix while x and dx are size n. 
+//Q and dx are known, the goal is to find x 
+//do this with the conjugate gradient method
+
+
 // Function to perform matrix-vector multiplication
 std::vector<double> matVecMul(const std::vector<std::vector<double>>& matrix, const std::vector<double>& vec) {
     int n = vec.size();
