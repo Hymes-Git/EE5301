@@ -1,6 +1,7 @@
 #ifndef __GPT_MATRIXSOLVER__H
 #define __GPT_MATRIXSOLVER__H
 #include <vector>
+#include <iostream>
 
 using namespace std;
 

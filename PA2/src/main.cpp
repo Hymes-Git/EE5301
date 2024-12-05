@@ -15,6 +15,7 @@ using namespace std;
 
 int circuitWidth, circuitHeight = 0;
 
+void importPositionsFromCSV (vector <double> &XVector, vector <double> &YVector, string circuitName);
 double calculateWireLength (vector <vector <double>> &qMatrix, vector <double> &XVector , vector<double> &YVector);
 void writeFinalPositions(string fileName, vector <double> &XVector, vector <double> &YVector, vector <SPinLocation> &pinLocations, int numCells);
 
@@ -122,19 +123,27 @@ int main(int argv, char *argc[])
 	initDXYVectors (dXVector, dYVector, pinLocationsLocal, cellPinArrayLocal, hyperEdgeIndexToFirstEntryInPinArrayLocal, hyperWeightsLocal, numCellsAndNoPadsLocal, numCellsAndPadsLocal);
 	initXYVectors(XVector, YVector, pinLocationsLocal, circuitWidth, circuitHeight);
 
-	cout << "Running Conjugate Gradient to find XVector" << endl;
-	XVector = conjugateGradient(qMatrix, dXVector);
-	cout << "Running Conjugate Gradient to find YVector" << endl;
-	YVector = conjugateGradient(qMatrix, dYVector);
+	bool import = true;
+	string importFileName = "./positions/positions_prespread_ibm01.csv";
+
+	if (import == true) {
+		cout << "Not Performing Conjugate Gradient, Importing Prespread Positions From: " << importFileName << endl;
+		importPositionsFromCSV(XVector, YVector, importFileName);
+	} else {
+		cout << "Running Conjugate Gradient to find XVector" << endl;
+		XVector = conjugateGradient(qMatrix, dXVector, 1e-4);
+		cout << "Running Conjugate Gradient to find YVector" << endl;
+		YVector = conjugateGradient(qMatrix, dYVector, 1e-4);
+		writeFinalPositions("./positions/positions_prespread.csv", XVector, YVector, pinLocationsLocal, numCellsAndNoPadsLocal);
+	}
 
 	cout << "Pre-spreading Wirelength: " << calculateWireLength(qMatrix, XVector, YVector) << endl;
-	writeFinalPositions("positions_prespread.csv", XVector, YVector, pinLocationsLocal, numCellsAndNoPadsLocal);
 
 	XSpreadCells(XSpreadedVector, XVector, YVector, circuitWidth, circuitHeight, 5);
 	YSpreadCells(YSpreadedVector, XVector, YVector, circuitWidth, circuitHeight, 5);
 
 	cout << "Post-spreading Wirelength: " << calculateWireLength(qMatrix, XSpreadedVector, YSpreadedVector) << endl << endl;
-	writeFinalPositions("positions_postspread.csv", XSpreadedVector, YSpreadedVector, pinLocationsLocal, numCellsAndNoPadsLocal);
+	//writeFinalPositions("./positions/positions_postspread.csv", XSpreadedVector, YSpreadedVector, pinLocationsLocal, numCellsAndNoPadsLocal);
 }
 
 double calculateWireLength (vector <vector <double>> &qMatrix, vector <double> &XVector , vector<double> &YVector) {
@@ -155,6 +164,36 @@ double calculateWireLength (vector <vector <double>> &qMatrix, vector <double> &
 	sum = sqrt(sum);
 	return sum;
 
+}
+
+void importPositionsFromCSV (vector <double> &XVector, vector <double> &YVector, string circuitName) {
+	ifstream file(circuitName);
+
+	if (!file.is_open()) { 
+		std::cerr << "Error opening file" << std::endl; 
+		return; 
+	}
+
+	string line, type;
+
+	int index = 0;
+	std::getline(file, line);
+	while (std::getline(file, line)) { 
+		std::istringstream ss(line); 
+		std::string token; // Read the type 
+		if (token == "p") {
+			break;
+		}
+		std::getline(ss, type, ','); // Read the x coordinate 
+		if (type == "p") {
+			break;
+		}
+		std::getline(ss, token, ','); 
+		XVector[index] = std::stod(token);
+		std::getline(ss, token, ','); 
+		YVector[index] = std::stod(token);
+		index += 1;
+	}
 }
 
 void writeFinalPositions(string fileName, vector <double> &XVector, vector <double> &YVector, vector <SPinLocation> &pinLocations, int numCells) {

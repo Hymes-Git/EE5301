@@ -1,6 +1,7 @@
-#include <iostream>
 #include <vector>
 #include <cmath>
+#include <iostream>
+
 
 // PROGRAM WRITTEN USING COPILOT
 
@@ -11,7 +12,7 @@
 //do this with the conjugate gradient method
 
 
-// Function to perform matrix-vector multiplication
+// Function to perform matrix-vector multiplication O(vec.size()^2)
 std::vector<double> matVecMul(const std::vector<std::vector<double>>& matrix, const std::vector<double>& vec) {
     int n = vec.size();
     std::vector<double> result(n, 0.0);
@@ -23,7 +24,7 @@ std::vector<double> matVecMul(const std::vector<std::vector<double>>& matrix, co
     return result;
 }
 
-// Function to compute the dot product of two vectors
+// Function to compute the dot product of two vectors (O(vec1.size()))
 double dotProduct(const std::vector<double>& vec1, const std::vector<double>& vec2) {
     double result = 0.0;
     for (size_t i = 0; i < vec1.size(); ++i) {
@@ -32,7 +33,7 @@ double dotProduct(const std::vector<double>& vec1, const std::vector<double>& ve
     return result;
 }
 
-// Function to add two vectors
+// Function to add two vectors (O(vec1.size()))
 std::vector<double> vecAdd(const std::vector<double>& vec1, const std::vector<double>& vec2) {
     int n = vec1.size();
     std::vector<double> result(n);
@@ -42,7 +43,7 @@ std::vector<double> vecAdd(const std::vector<double>& vec1, const std::vector<do
     return result;
 }
 
-// Function to subtract two vectors
+// Function to subtract two vectors (O(vec1.size()))
 std::vector<double> vecSub(const std::vector<double>& vec1, const std::vector<double>& vec2) {
     int n = vec1.size();
     std::vector<double> result(n);
@@ -52,7 +53,7 @@ std::vector<double> vecSub(const std::vector<double>& vec1, const std::vector<do
     return result;
 }
 
-// Function to scale a vector by a scalar
+// Function to scale a vector by a scalar O(vec.size())
 std::vector<double> vecScale(const std::vector<double>& vec, double scalar) {
     int n = vec.size();
     std::vector<double> result(n);
@@ -65,12 +66,13 @@ std::vector<double> vecScale(const std::vector<double>& vec, double scalar) {
 // Conjugate Gradient method to solve Q * x + dx = 0
 std::vector<double> conjugateGradient(const std::vector<std::vector<double>>& Q, const std::vector<double>& dx, double tol = 1e-10, int maxIter = 1000) {
     int n = dx.size();
-    std::vector<double> x(n, 0.0);
-    std::vector<double> r = vecScale(dx, -1.0);
-    std::vector<double> p = r;
+    std::vector<double> x(n, 0.0); //declare output vector
+    std::vector<double> r = vecScale(dx, -1.0); // multiply dx by -1
+    std::vector<double> p = r; 
     double rsold = dotProduct(r, r);
 
     for (int i = 0; i < maxIter; ++i) {
+        std::cout << "Running Iteration " << i << " out of " << maxIter << " Total Iterations" << std::endl;
         std::vector<double> Qp = matVecMul(Q, p);
         double alpha = rsold / dotProduct(p, Qp);
         x = vecAdd(x, vecScale(p, alpha));
@@ -78,6 +80,7 @@ std::vector<double> conjugateGradient(const std::vector<std::vector<double>>& Q,
         double rsnew = dotProduct(r, r);
 
         if (sqrt(rsnew) < tol) {
+            std::cout << "Finished on Iteration: " << i << std::endl;
             break;
         }
 
@@ -87,25 +90,3 @@ std::vector<double> conjugateGradient(const std::vector<std::vector<double>>& Q,
 
     return x;
 }
-
-// int main() {
-//     // Example input
-//     std::vector<std::vector<double>> Q = {
-//         {4, 1},
-//         {1, 3}
-//     };
-
-//     std::vector<double> dx = {1, 2};
-
-//     // Solve the matrix equation using the Conjugate Gradient method
-//     std::vector<double> x = conjugateGradient(Q, dx);
-
-//     // Output the result
-//     std::cout << "Solution x: ";
-//     for (const double& val : x) {
-//         std::cout << val << " ";
-//     }
-//     std::cout << std::endl;
-
-//     return 0;
-// }
