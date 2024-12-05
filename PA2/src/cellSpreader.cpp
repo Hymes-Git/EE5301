@@ -62,6 +62,7 @@ void XSpreadCells(vector <double> &XSpreadedVector, vector <double> &XVector, ve
     vector <double> NB;
     vector <double> U;
     double delta = 1.5;
+    double alpha = 0.8;
     OB.resize(k+1);
     NB.resize(k+1);
     U.resize(k+1);
@@ -102,6 +103,14 @@ void XSpreadCells(vector <double> &XSpreadedVector, vector <double> &XVector, ve
 
     }
 
+    for (unsigned int cellNum = 0; cellNum < XSpreadedVector.size(); cellNum++) {
+
+        double xj = XVector[cellNum];
+        double xjprime = XSpreadedVector[cellNum];
+        XSpreadedVector[cellNum] = xj + alpha * (xjprime - xj);
+
+    }
+
    // XSpreadedVector = XVector; 
 
 }
@@ -112,6 +121,7 @@ void YSpreadCells(vector <double> &YSpreadedVector, vector <double> &XVector, ve
     vector <double> NB;
     vector <double> U;
     double delta = 1.5;
+    double alpha = 0.8;
     OB.resize(k+1);
     NB.resize(k+1);
     U.resize(k+1);
@@ -148,6 +158,14 @@ void YSpreadCells(vector <double> &YSpreadedVector, vector <double> &XVector, ve
             }
 
         }
+
+    }
+
+    for (unsigned int cellNum = 0; cellNum < YSpreadedVector.size(); cellNum++) {
+
+        double yj = YVector[cellNum];
+        double yjprime = YSpreadedVector[cellNum];
+        YSpreadedVector[cellNum] = yj + alpha * (yjprime - yj);
 
     }
 

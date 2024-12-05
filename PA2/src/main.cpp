@@ -122,7 +122,9 @@ int main(int argv, char *argc[])
 	initDXYVectors (dXVector, dYVector, pinLocationsLocal, cellPinArrayLocal, hyperEdgeIndexToFirstEntryInPinArrayLocal, hyperWeightsLocal, numCellsAndNoPadsLocal, numCellsAndPadsLocal);
 	initXYVectors(XVector, YVector, pinLocationsLocal, circuitWidth, circuitHeight);
 
+	cout << "Running Conjugate Gradient to find XVector" << endl;
 	XVector = conjugateGradient(qMatrix, dXVector);
+	cout << "Running Conjugate Gradient to find YVector" << endl;
 	YVector = conjugateGradient(qMatrix, dYVector);
 
 	cout << "Pre-spreading Wirelength: " << calculateWireLength(qMatrix, XVector, YVector) << endl;
