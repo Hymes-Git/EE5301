@@ -53,7 +53,7 @@ plt.title('Cell and Pin Locations')
 
 # Save the plot as a PNG file
 
-fileName = "prespread_cell_and_pin_locations_" + circuitName + ".png"
+fileName = "./images/prespread_cell_and_pin_locations_" + circuitName + ".png"
 plt.savefig(fileName)
 
 # Show the plot (optional)
@@ -99,7 +99,7 @@ plt.title('Cell and Pin Locations')
 
 # Save the plot as a PNG file
 
-fileName = "postspread_cell_and_pin_locations_" + circuitName + ".png"
+fileName = "./images/postspread_cell_and_pin_locations_" + circuitName + ".png"
 plt.savefig(fileName)
 
 # Show the plot (optional)
