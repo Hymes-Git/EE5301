@@ -1,0 +1,8 @@
+toy01 prespread: 2.74378
+toy01 postspread: 2.74852
+toy02 prespread: 9.98869
+toy02 postspread: 11.1001
+ibm01 prespread: 270.894
+ibm01 postspread: 660.731
+ibm03 prespread: 379.767
+ibm03 postspread: 867.229
