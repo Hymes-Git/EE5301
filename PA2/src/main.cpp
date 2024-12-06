@@ -233,6 +233,8 @@ void importPositionsFromCSV (vector <float> &XVector, vector <float> &YVector, s
 		YVector[index] = std::stod(token);
 		index += 1;
 	}
+
+	file.close();
 }
 
 void writeFinalPositions(string fileName, vector <float> &XVector, vector <float> &YVector, vector <SPinLocation> &pinLocations, int numCells) {
