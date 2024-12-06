@@ -1,3 +1,6 @@
+compile the program by running 'make' in the terminal
+python program may require libraries not currently installed
+
 CellSpread deals with the cell spreading algorithm
 
 gpt_matrixsolver deals with the matrix solver, obtained using copilot
