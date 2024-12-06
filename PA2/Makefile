@@ -6,8 +6,8 @@ TARGET=placer
 SOURCES=$(shell find $(SRC_DIR) -type f -name *.cpp)
 OBJECTS=$(patsubst $(SRC_DIR)/%,$(BUID_DIR)/%,$(SOURCES:.cpp=.o))
 
-#CFLAGS=-Wall -std=c++11 -O3
-CFLAGS=-Wall -std=c++11 -g
+CFLAGS=-Wall -std=c++11 -O3
+#CFLAGS=-Wall -std=c++11 -g
 
 INC=-I include
 

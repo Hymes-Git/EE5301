@@ -49,12 +49,6 @@ vector < vector <vector <int>>> initBinMatrix(vector <double> &XVector, vector <
             yIndex = k-1;
         }
 
-        if (cell == 8419) {
-            cout << xIndex << " " << yIndex << endl;
-            cout << XVector[8419] << endl;
-            cout << YVector[8419] << endl;
-        }
-
         binMatrix[yIndex][xIndex].push_back(cell);
 
     }  
@@ -87,7 +81,7 @@ void XSpreadCells(vector <double> &XSpreadedVector, vector <double> &XVector, ve
     // row
     for (int row = 0; row < k; row++) {
 
-        cout << "Row: " << row << endl;
+        //cout << "Row: " << row << endl;
 
         // Calculate U Values for given row
         for (int column = 0; column < k; column++) {
@@ -102,27 +96,27 @@ void XSpreadCells(vector <double> &XSpreadedVector, vector <double> &XVector, ve
             NB[column] = (topLeft + topRight) / bottom;
 
 
-            cout << "Error Found Printing All Relevant Values" << endl;
-            cout << "U[i] " << U[column] << " ";            
-            cout << "U[i+1] " << U[column+1] << " ";
-            cout << "OB[i-1] " << OB[column-1] << " ";
-            cout << "OB[i+1] " << OB[column+1] << endl;            
+            // cout << "Error Found Printing All Relevant Values" << endl;
+            // cout << "U[i] " << U[column] << " ";            
+            // cout << "U[i+1] " << U[column+1] << " ";
+            // cout << "OB[i-1] " << OB[column-1] << " ";
+            // cout << "OB[i+1] " << OB[column+1] << endl;            
 
  
 
             assert(NB[column <= circuitWidth]);
         }
 
-        for (unsigned int i = 0; i < NB.size(); i++) {
-            cout << "Column: " << i << " " << OB[i] << " " << NB[i] << " " << U[i] << endl;
-        }
+        // for (unsigned int i = 0; i < NB.size(); i++) {
+        //     cout << "Column: " << i << " " << OB[i] << " " << NB[i] << " " << U[i] << endl;
+        // }
 
         // go through each column
         for (int column = 1; column < k-1; column++) {
             
             vector <int> cellList = binMatrix[row][column];
 
-            cout << row << " " << column << endl;
+            // cout << row << " " << column << endl;
             
             // for given column calculate all spreaded x coordinates
             for (unsigned int cellNum = 0; cellNum < cellList.size(); cellNum++) {

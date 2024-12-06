@@ -15,9 +15,31 @@
 using namespace std;
 
 int circuitWidth, circuitHeight = 0;
-
+/**
+ * Using the giving file name, imports the locations to the XVector and YVector variables, used to bypass the gradient descent
+ * @param XVector XVector to write x-coordinates to
+ * @param YVector YVector to write y-coordinates to
+ * @param circuitName name of circuit i.e. ibm01
+ */
 void importPositionsFromCSV (vector <double> &XVector, vector <double> &YVector, string circuitName);
+
+/**
+ * Calculates the total wire length
+ * @param qMatrix the q matrix
+ * @param XVector vector of x-coordinates for cells
+ * @param YVector vector of y-coordinates for cells
+ */
 double calculateWireLength (vector <vector <double>> &qMatrix, vector <double> &XVector , vector<double> &YVector);
+
+/**
+ * Writes the final positions of cells described by the XVector and YVector
+ * @param fileName file to write positions to, include the file extension yourself
+ * @param XVector passed by reference X positions vector
+ * @param YVector passed by reference Y positions vector
+ * @param pinLocations passed by reference describes location of pins
+ * @param numCells number of non-star movable cells
+ * 
+ */
 void writeFinalPositions(string fileName, vector <double> &XVector, vector <double> &YVector, vector <SPinLocation> &pinLocations, int numCells);
 
 int main(int argv, char *argc[])
@@ -31,14 +53,7 @@ int main(int argv, char *argc[])
 		return 1;
 	}
 
-
-
-
-
-
-
     cout << "Reading circuit file " << argc[1] << endl;
-
 
 	strcpy(inareFileName, argc[1]);
 	strcat(inareFileName, ".are");
@@ -148,7 +163,7 @@ int main(int argv, char *argc[])
 	initDXYVectors (dXVector, dYVector, pinLocationsLocal, cellPinArrayLocal, hyperEdgeIndexToFirstEntryInPinArrayLocal, hyperWeightsLocal, numCellsAndNoPadsLocal, numCellsAndPadsLocal);
 	initXYVectors(XVector, YVector, pinLocationsLocal, circuitWidth, circuitHeight);
 
-	bool import = true;
+	bool import = false;
 
 	if (import == true) {
 		cout << "Not Performing Conjugate Gradient, Importing Prespread Positions From: " << prespreadFileName << endl;
