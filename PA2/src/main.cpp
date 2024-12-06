@@ -10,6 +10,7 @@
 #include "gpt_matrixsolver.h"
 #include "QDXDYInitializer.h"
 #include "cellSpreader.h"
+#include <string>
 
 using namespace std;
 
@@ -29,8 +30,15 @@ int main(int argv, char *argc[])
 		cout << "Please provide a circuit file name with no extension." << endl;
 		return 1;
 	}
-        	     
+
+
+
+
+
+
+
     cout << "Reading circuit file " << argc[1] << endl;
+
 
 	strcpy(inareFileName, argc[1]);
 	strcat(inareFileName, ".are");
@@ -38,6 +46,23 @@ int main(int argv, char *argc[])
 	strcat(innetFileName,".net");
 	strcpy(inPadLocationFileName,argc[1]);
 	strcat(inPadLocationFileName,".kiaPad");
+
+	string test = inareFileName;
+
+    size_t start = test.find_last_of('/') + 1;  // Find the position after the last '/'
+    size_t end = test.find_last_of('.');        // Find the position before the last '.'
+	string circuitName = test.substr(start, end - start);  // Extract the substring between '/' and '.'
+
+	// find the name of the circuit i.e. ibm01 or toy02
+	cout << circuitName << endl;
+
+	string prespreadFileName = "./positions/positions_prespread_";
+	prespreadFileName.append(circuitName);
+	prespreadFileName.append(".csv");
+
+	string postspreadFileName = "./positions/positions_postspread_";
+	postspreadFileName.append(circuitName);
+	postspreadFileName.append(".csv");
 
 	int success = parseIbmFile(inareFileName, innetFileName, inPadLocationFileName);
 	if (success == -1) {
@@ -124,17 +149,16 @@ int main(int argv, char *argc[])
 	initXYVectors(XVector, YVector, pinLocationsLocal, circuitWidth, circuitHeight);
 
 	bool import = true;
-	string importFileName = "./positions/positions_prespread_ibm01.csv";
 
 	if (import == true) {
-		cout << "Not Performing Conjugate Gradient, Importing Prespread Positions From: " << importFileName << endl;
-		importPositionsFromCSV(XVector, YVector, importFileName);
+		cout << "Not Performing Conjugate Gradient, Importing Prespread Positions From: " << prespreadFileName << endl;
+		importPositionsFromCSV(XVector, YVector, prespreadFileName);
 	} else {
 		cout << "Running Conjugate Gradient to find XVector" << endl;
 		XVector = conjugateGradient(qMatrix, dXVector, 1e-4);
 		cout << "Running Conjugate Gradient to find YVector" << endl;
 		YVector = conjugateGradient(qMatrix, dYVector, 1e-4);
-		writeFinalPositions("./positions/positions_prespread.csv", XVector, YVector, pinLocationsLocal, numCellsAndNoPadsLocal);
+		writeFinalPositions(prespreadFileName, XVector, YVector, pinLocationsLocal, numCellsAndNoPadsLocal);
 	}
 
 	cout << "Pre-spreading Wirelength: " << calculateWireLength(qMatrix, XVector, YVector) << endl;
@@ -143,7 +167,7 @@ int main(int argv, char *argc[])
 	YSpreadCells(YSpreadedVector, XVector, YVector, circuitWidth, circuitHeight, 5);
 
 	cout << "Post-spreading Wirelength: " << calculateWireLength(qMatrix, XSpreadedVector, YSpreadedVector) << endl << endl;
-	//writeFinalPositions("./positions/positions_postspread.csv", XSpreadedVector, YSpreadedVector, pinLocationsLocal, numCellsAndNoPadsLocal);
+	writeFinalPositions(postspreadFileName, XSpreadedVector, YSpreadedVector, pinLocationsLocal, numCellsAndNoPadsLocal);
 }
 
 double calculateWireLength (vector <vector <double>> &qMatrix, vector <double> &XVector , vector<double> &YVector) {

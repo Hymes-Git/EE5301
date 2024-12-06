@@ -1,5 +1,6 @@
 #include "cellSpreader.h"
 #include <iostream>
+#include <assert.h>
 
 vector < vector <vector <int>>> initBinMatrix(vector <double> &XVector, vector <double> &YVector, int circuitWidth, int circuitHeight, int k) {
     int numCells = XVector.size();
@@ -48,6 +49,12 @@ vector < vector <vector <int>>> initBinMatrix(vector <double> &XVector, vector <
             yIndex = k-1;
         }
 
+        if (cell == 8419) {
+            cout << xIndex << " " << yIndex << endl;
+            cout << XVector[8419] << endl;
+            cout << YVector[8419] << endl;
+        }
+
         binMatrix[yIndex][xIndex].push_back(cell);
 
     }  
@@ -69,45 +76,83 @@ void XSpreadCells(vector <double> &XSpreadedVector, vector <double> &XVector, ve
 
     NB[0] = 0;
     OB[k] = circuitWidth;
+    NB[k] = circuitWidth;
 
 
     OB[0] = 0;
     for (int i = 1; i < k; i++) {
-        OB[i] = OB[i-1] + (circuitWidth / k);
+        OB[i] = OB[i-1] + (circuitWidth / (double)k);
     }
 
     // row
     for (int row = 0; row < k; row++) {
 
+        cout << "Row: " << row << endl;
+
+        // Calculate U Values for given row
         for (int column = 0; column < k; column++) {
-            U[column+1] = binMatrix[row][column].size();
+            U[column] = binMatrix[row][column].size();
         }
 
+        // Calculate NB Values for given row
         for (int column = 1; column < k; column++) {
-            NB[column] = ( OB[column-1] * (U[column+1] + delta) + OB[column+1] * (U[column] + delta) )
-                        / (U[column] + U[column+1] + 2*delta);
+            double topLeft = OB[column-1] * (U[column] + delta);
+            double topRight = OB[column+1] * (U[column-1] + delta);
+            double bottom = U[column-1] + U[column] + 2.0 * delta;
+            NB[column] = (topLeft + topRight) / bottom;
+
+
+            cout << "Error Found Printing All Relevant Values" << endl;
+            cout << "U[i] " << U[column] << " ";            
+            cout << "U[i+1] " << U[column+1] << " ";
+            cout << "OB[i-1] " << OB[column-1] << " ";
+            cout << "OB[i+1] " << OB[column+1] << endl;            
+
+ 
+
+            assert(NB[column <= circuitWidth]);
         }
 
-        for (int column = 1; column < k; column++) {
+        for (unsigned int i = 0; i < NB.size(); i++) {
+            cout << "Column: " << i << " " << OB[i] << " " << NB[i] << " " << U[i] << endl;
+        }
+
+        // go through each column
+        for (int column = 1; column < k-1; column++) {
             
             vector <int> cellList = binMatrix[row][column];
+
+            cout << row << " " << column << endl;
             
+            // for given column calculate all spreaded x coordinates
             for (unsigned int cellNum = 0; cellNum < cellList.size(); cellNum++) {
                 int cell = cellList[cellNum];
 
-                XSpreadedVector[cell] = ( NB[column] * (XVector[cell] - OB[column-1]) + NB[column-1] * (OB[column] - XVector[cell]) )
-                                        / (OB[column] - OB[column-1]);   
+                double topLeft = NB[column+1] * (XVector[cell] - OB[column]);
+                double topRight = NB[column] * (OB[column+1]-XVector[cell]);
+                double bottom = OB[column+1] - OB[column];
+                XSpreadedVector[cell] = (topLeft+topRight) / bottom;
+
+                // run the alpha scaler
+                double xj = XVector[cell];
+                double xjprime = XSpreadedVector[cell];
+                XSpreadedVector[cell] = xj + alpha * (xjprime - xj);
+
+                if (XSpreadedVector[cell] > circuitWidth) {
+                    cout << "XSpreadedVector: " << XSpreadedVector[cell] << endl;
+                    cout << "cell: " << cell << endl;
+                    cout << "Error Found Printing All Relevant Values" << endl;
+                    cout << "NB[i+1]" << NB[column+1] << " ";
+                    cout << "X[i]" << XVector[cell] << " ";
+                    cout << "OB[i]" << OB[column] << " ";
+                    cout << "NB[i]" << NB[column] << " ";
+                    cout << "OB[i+1]" << OB[column+1] << endl;
+                }
+
+                assert(XSpreadedVector[cell] <= circuitWidth); 
             }
 
         }
-
-    }
-
-    for (unsigned int cellNum = 0; cellNum < XSpreadedVector.size(); cellNum++) {
-
-        double xj = XVector[cellNum];
-        double xjprime = XSpreadedVector[cellNum];
-        XSpreadedVector[cellNum] = xj + alpha * (xjprime - xj);
 
     }
 
@@ -134,16 +179,23 @@ void YSpreadCells(vector <double> &YSpreadedVector, vector <double> &XVector, ve
         OB[i] = OB[i-1] + (circuitHeight / k);
     }
 
-    // row
+    // Go through each column
     for (int column = 0; column < k; column++) {
 
+        // calculate all U values for given column
         for (int row = 0; row < k; row++) {
-            U[row+1] = binMatrix[row][column].size();
+            U[row] = binMatrix[row][column].size();
         }
 
+        // calculate all NB values for given column
         for (int row = 1; row < k; row++) {
-            NB[row] = ( OB[row-1] * (U[row+1] + delta) + OB[row+1] * (U[row] + delta) )
-                        / (U[row] + U[row+1] + 2*delta);
+            double topLeft = OB[row-1] * (U[row] + delta);
+            double topRight = OB[row+1] * (U[row-1] + delta);
+            double bottom = U[row-1] + U[row] + 2.0 * delta;
+            NB[row] = (topLeft + topRight) / bottom;
+
+            assert(NB[row] <= circuitHeight); 
+
         }
 
         for (int row = 1; row < k; row++) {
@@ -153,22 +205,33 @@ void YSpreadCells(vector <double> &YSpreadedVector, vector <double> &XVector, ve
             for (unsigned int cellNum = 0; cellNum < cellList.size(); cellNum++) {
                 int cell = cellList[cellNum];
 
-                YSpreadedVector[cell] = ( NB[row] * (YVector[cell] - OB[row-1]) + NB[row-1] * (OB[row] - YVector[cell]) )
-                                        / (OB[row] - OB[row-1]);   
+                double topLeft = NB[row+1] * (YVector[cell] - OB[row]);
+                double topRight = NB[row] * (OB[row+1]-YVector[cell]);
+                double bottom = OB[row+1] - OB[row];
+                YSpreadedVector[cell] = (topLeft+topRight) / bottom;         
+
+                double yj = YVector[cell];
+                double yjprime = YSpreadedVector[cell];
+                YSpreadedVector[cell] = yj + alpha * (yjprime - yj);                              
+
+                if (YSpreadedVector[cell] > circuitHeight) {
+                    cout << "Top Left, Right, Bottom: " << topLeft << " " << topRight << " " << bottom << endl;
+                    cout << "YSpreadedVector: " << YSpreadedVector[cell] << endl;
+                    cout << "cell: " << cell << endl;
+                    cout << "Error Found Printing All Relevant Values" << endl;
+                    cout << "NB[i+1]" << NB[row+1] << " ";
+                    cout << "Y[i]" << YVector[cell] << " ";
+                    cout << "OB[i]" << OB[row] << " ";
+                    cout << "NB[i]" << NB[row] << " ";
+                    cout << "OB[i+1]" << OB[row+1] << endl;
+                }
+
+                assert(YSpreadedVector[cell] <= circuitHeight); 
+
             }
 
         }
 
     }
-
-    for (unsigned int cellNum = 0; cellNum < YSpreadedVector.size(); cellNum++) {
-
-        double yj = YVector[cellNum];
-        double yjprime = YSpreadedVector[cellNum];
-        YSpreadedVector[cellNum] = yj + alpha * (yjprime - yj);
-
-    }
-
-    // YSpreadedVector = YVector;
 
 }

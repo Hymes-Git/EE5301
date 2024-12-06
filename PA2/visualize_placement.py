@@ -9,11 +9,14 @@ else:
 
 # WRITTEN EXCLUSIVELY USING MICROSOFT COPILOT
 
+prespreadFileName = "./positions/positions_prespread_" + circuitName + ".csv" 
+postspreadFileName = "./positions/positions_postspread_" + circuitName + ".csv"
+
 # Read the data from the CSV file
 try:
-    df = pd.read_csv('positions_prespread.csv')
+    df = pd.read_csv(prespreadFileName)
 except FileNotFoundError:
-    print("The file 'positions.csv' was not found.")
+    print(f"The file {prespreadFileName} was not found.")
     exit()
 
 # Trim any extra spaces from the column names
@@ -57,9 +60,9 @@ plt.savefig(fileName)
 plt.show()
 
 try:
-    df = pd.read_csv('positions_postspread.csv')
+    df = pd.read_csv(postspreadFileName)
 except FileNotFoundError:
-    print("The file 'positions.csv' was not found.")
+    print(f"The file {postspreadFileName} was not found.")
     exit()
 
 # Trim any extra spaces from the column names
