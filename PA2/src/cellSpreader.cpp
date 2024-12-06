@@ -2,12 +2,12 @@
 #include <iostream>
 #include <assert.h>
 
-vector < vector <vector <int>>> initBinMatrix(vector <double> &XVector, vector <double> &YVector, int circuitWidth, int circuitHeight, int k) {
+vector < vector <vector <int>>> initBinMatrix(vector <float> &XVector, vector <float> &YVector, int circuitWidth, int circuitHeight, int k) {
     int numCells = XVector.size();
 
     vector < vector <vector <int>>> binMatrix;
-    vector <double> OBX;
-    vector <double> OBY;
+    vector <float> OBX;
+    vector <float> OBY;
     OBX.resize(k);
     OBY.resize(k);
 
@@ -24,8 +24,8 @@ vector < vector <vector <int>>> initBinMatrix(vector <double> &XVector, vector <
     }
 
     for (int cell = 0; cell < numCells; cell++) {
-        double XCord = XVector[cell];
-        double YCord = YVector[cell];
+        float XCord = XVector[cell];
+        float YCord = YVector[cell];
         int xIndex = 0;
         int yIndex = 0;
 
@@ -57,13 +57,13 @@ vector < vector <vector <int>>> initBinMatrix(vector <double> &XVector, vector <
 
 }
 
-void XSpreadCells(vector <double> &XSpreadedVector, vector <double> &XVector, vector <double> &YVector, int circuitWidth, int circuitHeight, int k) { 
+void XSpreadCells(vector <float> &XSpreadedVector, vector <float> &XVector, vector <float> &YVector, int circuitWidth, int circuitHeight, int k) { 
     vector < vector <vector <int>>> binMatrix = initBinMatrix(XVector, YVector, circuitWidth, circuitHeight, k);
-    vector <double> OB;
-    vector <double> NB;
-    vector <double> U;
-    double delta = 1.5;
-    double alpha = 0.8;
+    vector <float> OB;
+    vector <float> NB;
+    vector <float> U;
+    float delta = 1.5;
+    float alpha = 0.8;
     OB.resize(k+1);
     NB.resize(k+1);
     U.resize(k+1);
@@ -75,7 +75,7 @@ void XSpreadCells(vector <double> &XSpreadedVector, vector <double> &XVector, ve
 
     OB[0] = 0;
     for (int i = 1; i < k; i++) {
-        OB[i] = OB[i-1] + (circuitWidth / (double)k);
+        OB[i] = OB[i-1] + (circuitWidth / (float)k);
     }
 
     // row
@@ -90,9 +90,9 @@ void XSpreadCells(vector <double> &XSpreadedVector, vector <double> &XVector, ve
 
         // Calculate NB Values for given row
         for (int column = 1; column < k; column++) {
-            double topLeft = OB[column-1] * (U[column] + delta);
-            double topRight = OB[column+1] * (U[column-1] + delta);
-            double bottom = U[column-1] + U[column] + 2.0 * delta;
+            float topLeft = OB[column-1] * (U[column] + delta);
+            float topRight = OB[column+1] * (U[column-1] + delta);
+            float bottom = U[column-1] + U[column] + 2.0 * delta;
             NB[column] = (topLeft + topRight) / bottom;
 
 
@@ -122,14 +122,14 @@ void XSpreadCells(vector <double> &XSpreadedVector, vector <double> &XVector, ve
             for (unsigned int cellNum = 0; cellNum < cellList.size(); cellNum++) {
                 int cell = cellList[cellNum];
 
-                double topLeft = NB[column+1] * (XVector[cell] - OB[column]);
-                double topRight = NB[column] * (OB[column+1]-XVector[cell]);
-                double bottom = OB[column+1] - OB[column];
+                float topLeft = NB[column+1] * (XVector[cell] - OB[column]);
+                float topRight = NB[column] * (OB[column+1]-XVector[cell]);
+                float bottom = OB[column+1] - OB[column];
                 XSpreadedVector[cell] = (topLeft+topRight) / bottom;
 
                 // run the alpha scaler
-                double xj = XVector[cell];
-                double xjprime = XSpreadedVector[cell];
+                float xj = XVector[cell];
+                float xjprime = XSpreadedVector[cell];
                 XSpreadedVector[cell] = xj + alpha * (xjprime - xj);
 
                 if (XSpreadedVector[cell] > circuitWidth) {
@@ -154,13 +154,13 @@ void XSpreadCells(vector <double> &XSpreadedVector, vector <double> &XVector, ve
 
 }
 
-void YSpreadCells(vector <double> &YSpreadedVector, vector <double> &XVector, vector <double> &YVector, int circuitWidth, int circuitHeight, int k) {
+void YSpreadCells(vector <float> &YSpreadedVector, vector <float> &XVector, vector <float> &YVector, int circuitWidth, int circuitHeight, int k) {
     vector < vector <vector <int>>> binMatrix = initBinMatrix(XVector, YVector, circuitWidth, circuitHeight, k);
-    vector <double> OB;
-    vector <double> NB;
-    vector <double> U;
-    double delta = 1.5;
-    double alpha = 0.8;
+    vector <float> OB;
+    vector <float> NB;
+    vector <float> U;
+    float delta = 1.5;
+    float alpha = 0.8;
     OB.resize(k+1);
     NB.resize(k+1);
     U.resize(k+1);
@@ -183,9 +183,9 @@ void YSpreadCells(vector <double> &YSpreadedVector, vector <double> &XVector, ve
 
         // calculate all NB values for given column
         for (int row = 1; row < k; row++) {
-            double topLeft = OB[row-1] * (U[row] + delta);
-            double topRight = OB[row+1] * (U[row-1] + delta);
-            double bottom = U[row-1] + U[row] + 2.0 * delta;
+            float topLeft = OB[row-1] * (U[row] + delta);
+            float topRight = OB[row+1] * (U[row-1] + delta);
+            float bottom = U[row-1] + U[row] + 2.0 * delta;
             NB[row] = (topLeft + topRight) / bottom;
 
             assert(NB[row] <= circuitHeight); 
@@ -199,13 +199,13 @@ void YSpreadCells(vector <double> &YSpreadedVector, vector <double> &XVector, ve
             for (unsigned int cellNum = 0; cellNum < cellList.size(); cellNum++) {
                 int cell = cellList[cellNum];
 
-                double topLeft = NB[row+1] * (YVector[cell] - OB[row]);
-                double topRight = NB[row] * (OB[row+1]-YVector[cell]);
-                double bottom = OB[row+1] - OB[row];
+                float topLeft = NB[row+1] * (YVector[cell] - OB[row]);
+                float topRight = NB[row] * (OB[row+1]-YVector[cell]);
+                float bottom = OB[row+1] - OB[row];
                 YSpreadedVector[cell] = (topLeft+topRight) / bottom;         
 
-                double yj = YVector[cell];
-                double yjprime = YSpreadedVector[cell];
+                float yj = YVector[cell];
+                float yjprime = YSpreadedVector[cell];
                 YSpreadedVector[cell] = yj + alpha * (yjprime - yj);                              
 
                 if (YSpreadedVector[cell] > circuitHeight) {

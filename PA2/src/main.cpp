@@ -21,7 +21,7 @@ int circuitWidth, circuitHeight = 0;
  * @param YVector YVector to write y-coordinates to
  * @param circuitName name of circuit i.e. ibm01
  */
-void importPositionsFromCSV (vector <double> &XVector, vector <double> &YVector, string circuitName);
+void importPositionsFromCSV (vector <float> &XVector, vector <float> &YVector, string circuitName);
 
 /**
  * Calculates the total wire length
@@ -29,7 +29,7 @@ void importPositionsFromCSV (vector <double> &XVector, vector <double> &YVector,
  * @param XVector vector of x-coordinates for cells
  * @param YVector vector of y-coordinates for cells
  */
-double calculateWireLength (vector <vector <double>> &qMatrix, vector <double> &XVector , vector<double> &YVector);
+float calculateWireLength (vector <vector <float>> &qMatrix, vector <float> &XVector , vector<float> &YVector);
 
 /**
  * Writes the final positions of cells described by the XVector and YVector
@@ -40,7 +40,7 @@ double calculateWireLength (vector <vector <double>> &qMatrix, vector <double> &
  * @param numCells number of non-star movable cells
  * 
  */
-void writeFinalPositions(string fileName, vector <double> &XVector, vector <double> &YVector, vector <SPinLocation> &pinLocations, int numCells);
+void writeFinalPositions(string fileName, vector <float> &XVector, vector <float> &YVector, vector <SPinLocation> &pinLocations, int numCells);
 
 int main(int argv, char *argc[])
 {
@@ -139,13 +139,13 @@ int main(int argv, char *argc[])
 	cout << "Num Stars: " << numStars << endl;
 
 	// create vectors and resize them
-	vector <vector <double>> qMatrix;
-	vector <double> dXVector;
-	vector <double> dYVector; 
-	vector <double> XVector;
-	vector <double> YVector;
-	vector <double> XSpreadedVector;
-	vector <double> YSpreadedVector;
+	vector <vector <float>> qMatrix;
+	vector <float> dXVector;
+	vector <float> dYVector; 
+	vector <float> XVector;
+	vector <float> YVector;
+	vector <float> XSpreadedVector;
+	vector <float> YSpreadedVector;
 	qMatrix.resize(numCellsAndNoPadsLocal + numStars);
 	dXVector.resize(numCellsAndNoPadsLocal + numStars);
 	dYVector.resize(numCellsAndNoPadsLocal + numStars);
@@ -185,13 +185,13 @@ int main(int argv, char *argc[])
 	writeFinalPositions(postspreadFileName, XSpreadedVector, YSpreadedVector, pinLocationsLocal, numCellsAndNoPadsLocal);
 }
 
-double calculateWireLength (vector <vector <double>> &qMatrix, vector <double> &XVector , vector<double> &YVector) {
-	double sum = 0;
+float calculateWireLength (vector <vector <float>> &qMatrix, vector <float> &XVector , vector<float> &YVector) {
+	float sum = 0;
 	int numNodes = qMatrix.size();
 	for (int row = 0; row < numNodes; row++) {
 		for (int column = 0; column < numNodes; column++) {
 
-			double entry = qMatrix[row][column];
+			float entry = qMatrix[row][column];
 
 			if (entry < 0) {
 				sum += -1 * entry * ( pow((XVector[row] - XVector[column]), 2.0) + pow((YVector[row] - YVector[column]), 2.0) );
@@ -205,7 +205,7 @@ double calculateWireLength (vector <vector <double>> &qMatrix, vector <double> &
 
 }
 
-void importPositionsFromCSV (vector <double> &XVector, vector <double> &YVector, string circuitName) {
+void importPositionsFromCSV (vector <float> &XVector, vector <float> &YVector, string circuitName) {
 	ifstream file(circuitName);
 
 	if (!file.is_open()) { 
@@ -235,7 +235,7 @@ void importPositionsFromCSV (vector <double> &XVector, vector <double> &YVector,
 	}
 }
 
-void writeFinalPositions(string fileName, vector <double> &XVector, vector <double> &YVector, vector <SPinLocation> &pinLocations, int numCells) {
+void writeFinalPositions(string fileName, vector <float> &XVector, vector <float> &YVector, vector <SPinLocation> &pinLocations, int numCells) {
 
 	ofstream fileOut;
 

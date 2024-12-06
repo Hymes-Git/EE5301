@@ -1,7 +1,7 @@
 #include "QDXDYInitializer.h"
 
-double calculateGamma(int numEdges) {
-	double gamma;
+float calculateGamma(int numEdges) {
+	float gamma;
 	
 	if (numEdges > 3) {
 		// is a star
@@ -15,7 +15,7 @@ double calculateGamma(int numEdges) {
 
 }
 
-void populateQMatrixForEdge (vector <vector <double>> &qMatrix, int edge1, int edge2, vector<int> hyperEdgeWeights, int numMovableCells, int numCellsAndPins, int currEdge, int edgeSize) {
+void populateQMatrixForEdge (vector <vector <float>> &qMatrix, int edge1, int edge2, vector<int> hyperEdgeWeights, int numMovableCells, int numCellsAndPins, int currEdge, int edgeSize) {
 	int numPins = numCellsAndPins - numMovableCells;
 	if (edge1 >= numMovableCells && edge2 >= numMovableCells && edge1 < numCellsAndPins && edge2 < numCellsAndPins) {
 		// edge1 and edge2 are pins, but not star nodes, do nothing, unsure if this happens in reality, but don't want to take any chances				
@@ -42,7 +42,7 @@ void populateQMatrixForEdge (vector <vector <double>> &qMatrix, int edge1, int e
 	}
 }
 
-void initQMatrix(vector <vector <double>> &qMatrix, vector <int> &cellPinArray, vector <int> &hyperEdgeStartIndexes, vector <int> &hyperEdgeWeights, int numMovableCells, int numCellsAndPins) {
+void initQMatrix(vector <vector <float>> &qMatrix, vector <int> &cellPinArray, vector <int> &hyperEdgeStartIndexes, vector <int> &hyperEdgeWeights, int numMovableCells, int numCellsAndPins) {
 	int currStar = 0;
 
 	// iterate through each (hyper)edge
@@ -105,7 +105,7 @@ void initQMatrix(vector <vector <double>> &qMatrix, vector <int> &cellPinArray, 
 
 }
 
-void populateDXYVectorsForEdge (vector <double> &dXVector, vector <double> &dYVector, vector <SPinLocation> &pinLocations, int edge1, int edge2, vector<int> hyperEdgeWeights, int numMovableCells, int numCellsAndPins, int currEdge, int edgeSize) {
+void populateDXYVectorsForEdge (vector <float> &dXVector, vector <float> &dYVector, vector <SPinLocation> &pinLocations, int edge1, int edge2, vector<int> hyperEdgeWeights, int numMovableCells, int numCellsAndPins, int currEdge, int edgeSize) {
 	int numPins = numCellsAndPins - numMovableCells;
 	if (edge1 >= numMovableCells && edge2 >= numMovableCells && edge1 < numCellsAndPins && edge2 < numCellsAndPins) {
 		// edge1 and edge2 are pins, but not star nodes, do nothing, unsure if this happens in reality, but don't want to take any chances				
@@ -126,7 +126,7 @@ void populateDXYVectorsForEdge (vector <double> &dXVector, vector <double> &dYVe
 	}	
 }
 
-void initDXYVectors(vector <double> &dXVector, vector <double> &dYVector, vector <SPinLocation> &pinLocations, vector <int> &cellPinArray, vector <int> &hyperEdgeStartIndexes, vector <int> &hyperEdgeWeights, int numMovableCells, int numCellsAndPins) {
+void initDXYVectors(vector <float> &dXVector, vector <float> &dYVector, vector <SPinLocation> &pinLocations, vector <int> &cellPinArray, vector <int> &hyperEdgeStartIndexes, vector <int> &hyperEdgeWeights, int numMovableCells, int numCellsAndPins) {
 	int currStar = 0;
 
 	// iterate through each (hyper)edge
@@ -205,7 +205,7 @@ int findNumStars(vector <int> &hyperEdgeStartIndexes) {
 	return numStars;
 }
 
-void initXYVectors (vector <double> &XVector , vector<double> &YVector, vector <SPinLocation> &pinLocations, int &circuitWidth, int &circuitHeight) {
+void initXYVectors (vector <float> &XVector , vector<float> &YVector, vector <SPinLocation> &pinLocations, int &circuitWidth, int &circuitHeight) {
 
 	for (unsigned int pinNum = 0; pinNum < pinLocations.size(); pinNum++) {
 		if (pinLocations[pinNum].x > circuitWidth) {

@@ -5,6 +5,6 @@
 
 using namespace std;
 
-std::vector<double> conjugateGradient(const std::vector<std::vector<double>>& Q, const std::vector<double>& dx, double tol = 1e-10, int maxIter = 1000);
+std::vector<float> conjugateGradient(const std::vector<std::vector<float>>& Q, const std::vector<float>& dx, float tol = 1e-10, int maxIter = 1000);
 
 #endif 
