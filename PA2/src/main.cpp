@@ -189,7 +189,7 @@ float calculateWireLength (vector <vector <float>> &qMatrix, vector <float> &XVe
 	float sum = 0;
 	int numNodes = qMatrix.size();
 	for (int row = 0; row < numNodes; row++) {
-		for (int column = 0; column < numNodes; column++) {
+		for (int column = 0; column < row; column++) {
 
 			float entry = qMatrix[row][column];
 
